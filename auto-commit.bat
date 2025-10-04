@@ -3,16 +3,16 @@ REM Use 'enabledelayedexpansion' to properly handle variables within loops/group
 setlocal enabledelayedexpansion
 
 REM --- 1. Define the Fixed Commit Date ---
-REM Date: Friday, October 3rd, 2025, 1:15:00 PM +0530 (Lanka Time)
-set "COMMIT_DATE=Fri Oct 3 13:15:00 2025 +0530"
+REM Date: Saturday, October 4th, 2025, 1:15:00 PM +0530 (Lanka Time)
+set "COMMIT_DATE=Sat Oct 4 13:15:00 2025 +0530"
 
 REM --- 2. Stage Changes ---
 echo Staging all changes with 'git add .'
 git add .
 if %ERRORLEVEL% neq 0 (
-    echo.
-    echo ❌ ERROR: 'git add .' failed. Is this a Git repository?
-    goto :CommitFailed
+    echo.
+    echo ❌ ERROR: 'git add .' failed. Is this a Git repository?
+    goto :CommitFailed
 )
 
 REM --- 3. Prepare Commit Message (File List and Changes) ---
@@ -31,7 +31,7 @@ if not defined FILES set "FILES=(No staged files found)"
 if not defined CHANGES set "CHANGES_SNIPPET=(No visible changes)"
 
 REM --- 4. Construct Final Message ---
-set "MSG=feat: Updated !FILES! - Changes: !CHANGES_SNIPPET! - Committed on October 3rd, 2025"
+set "MSG=feat: Updated !FILES! - Changes: !CHANGES_SNIPPET! - Committed on October 4th, 2025"
 
 REM --- 5. Set Environment Variable and Commit with the Desired Date ---
 echo.
@@ -41,12 +41,12 @@ git commit --date="!COMMIT_DATE!" -m "!MSG!"
 
 REM --- 6. Check for Errors and Push ---
 if !ERRORLEVEL! neq 0 (
-    goto :CommitFailed
+    goto :CommitFailed
 ) else (
-    echo.
-    echo ✅ Commit successful! Date set to: Fri Oct 3, 2025.
-    echo.
-    git push origin main
+    echo.
+    echo ✅ Commit successful! Date set to: Sat Oct 4, 2025.
+    echo.
+    git push origin main
 )
 
 goto :EOF
