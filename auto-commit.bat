@@ -2,7 +2,8 @@
 setlocal enabledelayedexpansion
 
 REM --- 1. Define the Fixed Commit Date ---
-set "COMMIT_DATE=Sat Oct 4 13:15:00 2025 +0530"
+REM Date: Sunday, October 5th, 2025, 1:15:00 PM +0530 (Lanka Time)
+set "COMMIT_DATE=Sun Oct 5 13:15:00 2025 +0530"
 
 REM --- 2. Stage Changes ---
 echo Staging all changes with 'git add .'
@@ -26,7 +27,7 @@ if not defined FILES set "FILES=(No staged files found)"
 if not defined CHANGES set "CHANGES_SNIPPET=(No visible changes)"
 
 REM --- 4. Construct Final Message ---
-set "MSG=feat: Updated !FILES! - Changes: !CHANGES_SNIPPET! - Committed on October 4th, 2025"
+set "MSG=feat: Updated !FILES! - Changes: !CHANGES_SNIPPET! - Committed on October 5th, 2025"
 
 REM --- 5. Set Environment Variable and Commit with the Desired Date ---
 echo.
@@ -39,7 +40,7 @@ if !ERRORLEVEL! neq 0 (
 goto :CommitFailed
 ) else (
 echo.
-echo Commit successful! Date set to: Sat Oct 4, 2025.
+echo ✅ Commit successful! Date set to: Sun Oct 5, 2025.
 echo.
 git push origin main
 )
@@ -48,6 +49,6 @@ goto :EOF
 
 :CommitFailed
 echo.
-echo Commit failed. Please run 'git commit' manually to see the error.
+echo ❌ Commit failed. Please run 'git commit' manually to see the error.
 pause
 endlocal
