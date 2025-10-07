@@ -1261,29 +1261,43 @@
                 cancelAnimationFrame(animationId);
                 animationId = null;
             }
+            detectedFaces = [];
         }
 
         function startRendering() {
             let lastFrameTime = 0;
-            const fps = 30; // Limit to 30 FPS to prevent glitching
+            const fps = 30; // Limit to 30 FPS to prevent flickering
             const frameInterval = 1000 / fps;
             
             function render(currentTime) {
-                if (currentTime - lastFrameTime < frameInterval) {
-                    animationId = requestAnimationFrame(render);
-                    return;
-                }
+                animationId = requestAnimationFrame(render);
+                
+                if (currentTime - lastFrameTime < frameInterval) return;
                 lastFrameTime = currentTime;
                 
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    // Clear canvas first to prevent flickering
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw mirrored video
                     ctx.save();
                     ctx.scale(-1, 1);
                     ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
                     ctx.restore();
-                    if (currentFilter !== 'original') applyFilter(currentFilter);
-                    drawARElements();
+                    
+                    // Apply filter if not original
+                    if (currentFilter !== 'original' && !['dogears', 'glasses', 'crown', 'hearts', 'sparkle'].includes(currentFilter)) {
+                        applyFilter(currentFilter);
+                    }
+                    
+                    // Draw AR face filters
+                    if (['dogears', 'glasses', 'crown', 'hearts', 'sparkle'].includes(currentFilter)) {
+                        drawFaceARFilter(currentFilter);
+                    }
+                    
+                    // Detect faces in background
+                    detectFaces();
                 }
-                animationId = requestAnimationFrame(render);
             }
             render(0);
         }
