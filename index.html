@@ -1668,50 +1668,6 @@
             ctx.restore();
         }
 
-        // AR Elements
-        function drawARElements() {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 3;
-            const capSize = 350;
-
-            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, capSize * 0.5);
-            gradient.addColorStop(0, '#00ff00');
-            gradient.addColorStop(0.6, '#00cc00');
-            gradient.addColorStop(1, '#008800');
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.ellipse(centerX, centerY, capSize * 0.5, capSize * 0.35, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#005500';
-            ctx.beginPath();
-            ctx.ellipse(centerX, centerY + capSize * 0.3, capSize * 0.65, capSize * 0.12, 0, 0, Math.PI);
-            ctx.fill();
-
-            ctx.fillStyle = '#000';
-            ctx.font = `bold ${capSize * 0.13}px Inter`;
-            ctx.textAlign = 'center';
-            ctx.fillText('TECHFEST', centerX, centerY);
-
-            // Bottom branding
-            const bottomY = canvas.height - 300;
-            const grad2 = ctx.createLinearGradient(0, bottomY, 0, canvas.height);
-            grad2.addColorStop(0, 'rgba(0,0,0,0)');
-            grad2.addColorStop(1, 'rgba(0,0,0,0.85)');
-            ctx.fillStyle = grad2;
-            ctx.fillRect(0, bottomY, canvas.width, canvas.height - bottomY);
-
-            ctx.fillStyle = '#00ff00';
-            ctx.font = 'bold 70px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText('IEEE TECHFEST 2025', canvas.width / 2, canvas.height - 170);
-
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.font = '32px Inter';
-            ctx.fillText('Powering Tomorrow\'s Innovation', canvas.width / 2, canvas.height - 100);
-        }
-
         // Snapchat-Style Filter Selection
         document.querySelectorAll('.snap-filter-card').forEach(btn => {
             btn.addEventListener('click', () => {
