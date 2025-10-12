@@ -1440,6 +1440,231 @@
             ctx.putImageData(imageData, 0, 0);
         }
 
+        // Professional Face AR Filters
+        function drawFaceARFilter(filterType) {
+            if (!detectedFaces || detectedFaces.length === 0) {
+                // Show hint when no face detected
+                ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
+                ctx.font = 'bold 36px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('👤 Position your face', canvas.width / 2, 200);
+                return;
+            }
+
+            detectedFaces.forEach(face => {
+                const { box, landmarks } = face;
+                
+                ctx.save();
+                ctx.scale(-1, 1); // Mirror for correct positioning
+                ctx.translate(-canvas.width, 0);
+                
+                switch(filterType) {
+                    case 'dogears':
+                        // Dog ears on top of head
+                        const earSize = box.width * 0.6;
+                        const earY = box.y - earSize * 0.3;
+                        
+                        // Left ear
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.ellipse(box.x + box.width * 0.2, earY, earSize * 0.4, earSize * 0.6, -0.3, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Right ear
+                        ctx.beginPath();
+                        ctx.ellipse(box.x + box.width * 0.8, earY, earSize * 0.4, earSize * 0.6, 0.3, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Dog nose
+                        const noseSize = box.width * 0.15;
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.arc(landmarks.nose.x, landmarks.nose.y + noseSize * 0.5, noseSize, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Dog tongue
+                        const mouthCenter = landmarks.mouth[landmarks.mouth.length / 2];
+                        ctx.fillStyle = '#FF69B4';
+                        ctx.beginPath();
+                        ctx.ellipse(mouthCenter.x, mouthCenter.y + noseSize * 2, noseSize * 0.6, noseSize * 1.2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'glasses':
+                        // Cool tech glasses
+                        const glassWidth = box.width * 0.45;
+                        const glassHeight = box.height * 0.15;
+                        const glassY = (landmarks.leftEye.y + landmarks.rightEye.y) / 2;
+                        
+                        // Frame gradient
+                        const frameGrad = ctx.createLinearGradient(0, glassY - glassHeight/2, 0, glassY + glassHeight/2);
+                        frameGrad.addColorStop(0, '#00ff00');
+                        frameGrad.addColorStop(1, '#00cc00');
+                        
+                        // Left lens
+                        ctx.strokeStyle = frameGrad;
+                        ctx.lineWidth = 8;
+                        ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+                        roundRect(ctx, landmarks.leftEye.x - glassWidth/2, glassY - glassHeight/2, glassWidth, glassHeight, 15);
+                        ctx.fill();
+                        ctx.stroke();
+                        
+                        // Right lens
+                        roundRect(ctx, landmarks.rightEye.x - glassWidth/2, glassY - glassHeight/2, glassWidth, glassHeight, 15);
+                        ctx.fill();
+                        ctx.stroke();
+                        
+                        // Bridge
+                        ctx.beginPath();
+                        ctx.moveTo(landmarks.leftEye.x + glassWidth/2, glassY);
+                        ctx.lineTo(landmarks.rightEye.x - glassWidth/2, glassY);
+                        ctx.stroke();
+                        
+                        // Tech LED indicators
+                        ctx.fillStyle = '#00ff00';
+                        ctx.beginPath();
+                        ctx.arc(landmarks.rightEye.x + glassWidth/2 - 15, glassY - glassHeight/2 + 10, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'crown':
+                        // Royal crown
+                        const crownY = box.y - box.height * 0.15;
+                        const crownWidth = box.width * 0.8;
+                        const crownHeight = box.height * 0.25;
+                        const crownX = box.x + box.width * 0.1;
+                        
+                        // Crown base
+                        const crownGrad = ctx.createLinearGradient(crownX, crownY, crownX, crownY + crownHeight);
+                        crownGrad.addColorStop(0, '#FFD700');
+                        crownGrad.addColorStop(1, '#FFA500');
+                        ctx.fillStyle = crownGrad;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(crownX, crownY + crownHeight);
+                        // Crown points
+                        for (let i = 0; i <= 5; i++) {
+                            const x = crownX + (crownWidth / 5) * i;
+                            const y = i % 2 === 0 ? crownY : crownY + crownHeight * 0.4;
+                            ctx.lineTo(x, y);
+                        }
+                        ctx.lineTo(crownX + crownWidth, crownY + crownHeight);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // Crown jewels
+                        ctx.fillStyle = '#00ff00';
+                        for (let i = 0; i < 3; i++) {
+                            const jewel X = crownX + crownWidth * (0.25 + i * 0.25);
+                            ctx.beginPath();
+                            ctx.arc(jewelX, crownY + crownHeight * 0.5, 12, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        // Crown outline
+                        ctx.strokeStyle = '#DAA520';
+                        ctx.lineWidth = 4;
+                        ctx.stroke();
+                        break;
+                        
+                    case 'hearts':
+                        // Floating hearts around face
+                        const time = Date.now() / 1000;
+                        const numHearts = 8;
+                        
+                        for (let i = 0; i < numHearts; i++) {
+                            const angle = (i / numHearts) * Math.PI * 2 + time;
+                            const distance = box.width * 0.7 + Math.sin(time * 2 + i) * 20;
+                            const heartX = box.x + box.width / 2 + Math.cos(angle) * distance;
+                            const heartY = box.y + box.height / 2 + Math.sin(angle) * distance;
+                            const size = 30 + Math.sin(time * 3 + i) * 10;
+                            
+                            drawHeart(ctx, heartX, heartY, size);
+                        }
+                        break;
+                        
+                    case 'sparkle':
+                        // Sparkle/glitter effect
+                        const sparkleTime = Date.now() / 100;
+                        const numSparkles = 20;
+                        
+                        for (let i = 0; i < numSparkles; i++) {
+                            const sparkleX = box.x + Math.random() * box.width;
+                            const sparkleY = box.y + Math.random() * box.height;
+                            const sparkleSize = 5 + Math.random() * 15;
+                            const opacity = 0.3 + Math.sin(sparkleTime + i) * 0.7;
+                            
+                            ctx.save();
+                            ctx.globalAlpha = Math.max(0, opacity);
+                            drawStar(ctx, sparkleX, sparkleY, sparkleSize);
+                            ctx.restore();
+                        }
+                        
+                        // Face glow
+                        const glowGrad = ctx.createRadialGradient(
+                            box.x + box.width/2, box.y + box.height/2, 0,
+                            box.x + box.width/2, box.y + box.height/2, box.width * 0.7
+                        );
+                        glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+                        glowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                        ctx.fillStyle = glowGrad;
+                        ctx.fillRect(box.x - box.width * 0.2, box.y - box.height * 0.2, box.width * 1.4, box.height * 1.4);
+                        break;
+                }
+                
+                ctx.restore();
+            });
+        }
+
+        // Helper functions for drawing shapes
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function drawHeart(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = '#FF1493';
+            ctx.strokeStyle = '#FF69B4';
+            ctx.lineWidth = 3;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, size * 0.3);
+            ctx.bezierCurveTo(-size * 0.5, -size * 0.3, -size, size * 0.1, 0, size);
+            ctx.bezierCurveTo(size, size * 0.1, size * 0.5, -size * 0.3, 0, size * 0.3);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawStar(ctx, x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = '#FFD700';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#FFD700';
+            
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                const radius = i % 2 === 0 ? size : size * 0.4;
+                ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
         // AR Elements
         function drawARElements() {
             const centerX = canvas.width / 2;
