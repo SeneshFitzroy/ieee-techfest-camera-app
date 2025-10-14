@@ -1143,13 +1143,71 @@
         let stream = null;
         let animationId = null;
         let capturedPhotos = [];
+        let faceDetectionReady = false;
+        let detectedFaces = [];
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+        const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true, willReadFrequently: true });
 
         canvas.width = 1080;
         canvas.height = 1920;
+
+        // Initialize Face Detection
+        async function loadFaceDetection() {
+            try {
+                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+                faceDetectionReady = true;
+                console.log('✓ Face detection ready');
+            } catch (error) {
+                console.error('Face detection initialization failed:', error);
+                faceDetectionReady = false;
+            }
+        }
+
+        // Detect faces periodically (not every frame to avoid flickering)
+        let lastFaceDetectionTime = 0;
+        async function detectFaces() {
+            const now = Date.now();
+            if (!faceDetectionReady || now - lastFaceDetectionTime < 200) return; // Detect every 200ms
+            
+            lastFaceDetectionTime = now;
+            try {
+                const detections = await faceapi
+                    .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                    .withFaceLandmarks(true);
+                
+                if (detections && detections.length > 0) {
+                    // Scale detections to canvas size
+                    detectedFaces = detections.map(d => {
+                        const scaleX = canvas.width / video.videoWidth;
+                        const scaleY = canvas.height / video.videoHeight;
+                        
+                        return {
+                            box: {
+                                x: d.detection.box.x * scaleX,
+                                y: d.detection.box.y * scaleY,
+                                width: d.detection.box.width * scaleX,
+                                height: d.detection.box.height * scaleY
+                            },
+                            landmarks: {
+                                leftEye: { x: d.landmarks.getLeftEye()[0].x * scaleX, y: d.landmarks.getLeftEye()[0].y * scaleY },
+                                rightEye: { x: d.landmarks.getRightEye()[0].x * scaleX, y: d.landmarks.getRightEye()[0].y * scaleY },
+                                nose: { x: d.landmarks.getNose()[0].x * scaleX, y: d.landmarks.getNose()[0].y * scaleY },
+                                mouth: d.landmarks.getMouth().map(p => ({ x: p.x * scaleX, y: p.y * scaleY })),
+                                jawline: d.landmarks.getJawOutline().map(p => ({ x: p.x * scaleX, y: p.y * scaleY }))
+                            }
+                        };
+                    });
+                } else {
+                    detectedFaces = [];
+                }
+            } catch (error) {
+                console.error('Face detection error:', error);
+            }
+        }
 
         // Navigation
         function navigateToPage(pageName) {
