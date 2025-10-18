@@ -1221,7 +1221,10 @@
 
             currentPage = pageName;
 
-            if (pageName === 'camera') initCamera();
+            if (pageName === 'camera') {
+                initCamera();
+                if (!faceDetectionReady) loadFaceDetection();
+            }
             else if (pageName === 'gallery') loadGallery();
             else stopCamera();
 
