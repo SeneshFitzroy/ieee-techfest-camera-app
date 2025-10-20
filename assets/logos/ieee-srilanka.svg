@@ -1,0 +1,12 @@
+<svg width="512" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="200" fill="#006699"/>
+  <rect x="0" y="0" width="120" height="200" fill="#00447c"/>
+  <g transform="translate(60, 100)">
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#ffffff" stroke-width="4"/>
+    <path d="M -20,-20 L 0,0 L -20,20" stroke="#ffffff" stroke-width="4" fill="none"/>
+    <path d="M 0,-30 L 0,30" stroke="#ffffff" stroke-width="4"/>
+    <path d="M -30,0 L 30,0" stroke="#ffffff" stroke-width="4"/>
+  </g>
+  <text x="180" y="120" font-family="Arial" font-size="72" font-weight="800" fill="#ffffff">IEEE</text>
+  <text x="180" y="165" font-family="Arial" font-size="28" fill="#ffffff">Sri Lanka Section</text>
+</svg>
