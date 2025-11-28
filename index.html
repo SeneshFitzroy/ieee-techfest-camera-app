@@ -1184,7 +1184,8 @@
                             gap: 20px;
                             padding: 0 30px;
                             min-width: min-content;
-                            justify-content: flex-start;
+                            justify-content: center;
+                            align-items: center;
                         }
                         .snap-filter-card {
                             display: flex;
@@ -1221,12 +1222,14 @@
                             border-color: rgba(0, 255, 0, 0.5);
                             transform: scale(1.08);
                         }
-                        .snap-filter-icon {
-                            font-size: 32px;
-                            line-height: 1;
+                        .snap-filter-icon i {
+                            font-size: 30px;
+                            color: rgba(255, 255, 255, 0.8);
+                            transition: all 0.3s ease;
                         }
-                        .snap-filter-card.active .snap-filter-icon {
-                            filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.8));
+                        .snap-filter-card.active .snap-filter-icon i {
+                            color: #00ff00;
+                            text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
                         }
                         .snap-filter-name {
                             font-size: 11px;
