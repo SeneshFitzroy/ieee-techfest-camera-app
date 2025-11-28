@@ -1044,65 +1044,71 @@
                 </div>
 
                 <!-- Snapchat-Style Horizontal Scrolling Filters -->
-                <div class="filter-section" style="overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 20px 0;">
+                <div class="filter-section" style="overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 25px 0; margin-top: 20px;">
                     <style>
                         .filter-section::-webkit-scrollbar { display: none; }
                         .snapchat-filters {
                             display: flex;
-                            gap: 15px;
-                            padding: 0 20px;
+                            gap: 20px;
+                            padding: 0 30px;
                             min-width: min-content;
+                            justify-content: flex-start;
                         }
                         .snap-filter-card {
                             display: flex;
                             flex-direction: column;
                             align-items: center;
-                            min-width: 80px;
+                            min-width: 75px;
                             cursor: pointer;
-                            transition: all 0.3s ease;
+                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            flex-shrink: 0;
                         }
-                        .snap-filter-card:hover {
-                            transform: translateY(-5px);
+                        .snap-filter-card:active {
+                            transform: scale(0.95);
                         }
                         .snap-filter-icon {
-                            width: 75px;
-                            height: 75px;
-                            border-radius: 20px;
-                            background: rgba(255, 255, 255, 0.1);
+                            width: 70px;
+                            height: 70px;
+                            border-radius: 18px;
+                            background: rgba(30, 30, 30, 0.8);
                             backdrop-filter: blur(20px);
-                            border: 2px solid rgba(255, 255, 255, 0.2);
+                            border: 2px solid rgba(255, 255, 255, 0.15);
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            margin-bottom: 10px;
-                            transition: all 0.3s ease;
+                            margin-bottom: 8px;
+                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         }
                         .snap-filter-card.active .snap-filter-icon {
-                            background: rgba(0, 255, 0, 0.25);
+                            background: rgba(0, 255, 0, 0.2);
                             border-color: #00ff00;
-                            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
-                            transform: scale(1.1);
+                            box-shadow: 0 0 25px rgba(0, 255, 0, 0.6), 0 0 50px rgba(0, 255, 0, 0.3);
+                            transform: scale(1.15);
                         }
                         .snap-filter-card:hover .snap-filter-icon {
-                            border-color: #00ff00;
-                            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+                            border-color: rgba(0, 255, 0, 0.5);
+                            transform: scale(1.08);
                         }
                         .snap-filter-icon i {
-                            font-size: 32px;
-                            color: #fff;
+                            font-size: 30px;
+                            color: rgba(255, 255, 255, 0.8);
+                            transition: all 0.3s ease;
                         }
                         .snap-filter-card.active .snap-filter-icon i {
                             color: #00ff00;
+                            text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
                         }
                         .snap-filter-name {
-                            font-size: 13px;
-                            font-weight: 600;
-                            color: #fff;
+                            font-size: 11px;
+                            font-weight: 700;
+                            color: rgba(255, 255, 255, 0.6);
                             text-transform: uppercase;
-                            letter-spacing: 0.5px;
+                            letter-spacing: 0.8px;
+                            transition: all 0.3s ease;
                         }
                         .snap-filter-card.active .snap-filter-name {
                             color: #00ff00;
+                            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
                         }
                     </style>
                     <div class="snapchat-filters">
@@ -1475,8 +1481,10 @@
                         // Draw video frame naturally (NO MIRROR)
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         
-                        // Apply current filter
-                        applyFilter(currentFilter);
+                        // Apply current filter in REAL-TIME
+                        if (currentFilter && currentFilter !== 'original') {
+                            applyFilter(currentFilter);
+                        }
                         
                         // FPS monitoring
                         frameCount++;
@@ -1493,6 +1501,7 @@
                         // First frame confirmation
                         if (frameCount === 1) {
                             console.log('🎥 FIRST FRAME RENDERED - CAMERA WORKING!');
+                            console.log('🎨 Current filter:', currentFilter);
                         }
                         
                     } catch (drawError) {
@@ -1872,12 +1881,25 @@
             ctx.restore();
         }
 
-        // Snapchat-Style Filter Selection
+        // Snapchat-Style Filter Selection with Professional Feedback
         document.querySelectorAll('.snap-filter-card').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all filters
                 document.querySelectorAll('.snap-filter-card').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
+                
+                // Add active class to clicked filter
+                this.classList.add('active');
+                
+                // Update current filter
+                currentFilter = this.dataset.filter;
+                
+                // Visual feedback
+                console.log('🎨 Filter changed to:', currentFilter);
+                
+                // Haptic feedback for mobile (if supported)
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
             });
         });
 
