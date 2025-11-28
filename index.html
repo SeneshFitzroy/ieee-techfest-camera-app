@@ -1156,6 +1156,13 @@
         // Initialize Face Detection
         async function loadFaceDetection() {
             try {
+                // Check if faceapi library is loaded
+                if (typeof faceapi === 'undefined') {
+                    console.warn('Face API library not loaded yet, retrying...');
+                    setTimeout(loadFaceDetection, 1000);
+                    return;
+                }
+                
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
                 await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
