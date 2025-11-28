@@ -1252,13 +1252,21 @@
         // Camera
         async function initCamera() {
             if (stream) return;
+            console.log('Initializing camera...');
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode, width: { ideal: 1080 }, height: { ideal: 1920 }, aspectRatio: { ideal: 9/16 } },
                     audio: false
                 });
+                console.log('Camera stream obtained');
                 video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
+                };
+                
                 await video.play();
+                console.log('Video playing, starting render...');
                 startRendering();
             } catch (error) {
                 console.error('Camera error:', error);
@@ -1282,6 +1290,7 @@
             let lastFrameTime = 0;
             const fps = 30; // Limit to 30 FPS to prevent flickering
             const frameInterval = 1000 / fps;
+            let frameCount = 0;
             
             function render(currentTime) {
                 animationId = requestAnimationFrame(render);
@@ -1290,11 +1299,22 @@
                 lastFrameTime = currentTime;
                 
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    frameCount++;
+                    if (frameCount === 1) {
+                        console.log('First frame rendering, video ready state:', video.readyState);
+                        console.log('Canvas size:', canvas.width, 'x', canvas.height);
+                        console.log('Video size:', video.videoWidth, 'x', video.videoHeight);
+                    }
+                    
                     // Draw mirrored video - always draw the video first
                     ctx.save();
                     ctx.scale(-1, 1);
                     ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
                     ctx.restore();
+                    
+                    if (frameCount === 1) {
+                        console.log('✓ First frame drawn successfully');
+                    }
                     
                     // Apply color filter if selected (not face AR filters)
                     const faceARFilters = ['dogears', 'glasses', 'crown', 'hearts', 'sparkle'];
@@ -1308,9 +1328,12 @@
                     }
                     
                     // Detect faces in background (non-blocking)
-                    detectFaces();
+                    if (faceARFilters.includes(currentFilter)) {
+                        detectFaces();
+                    }
                 }
             }
+            console.log('Starting render loop...');
             render(0);
         }
 
