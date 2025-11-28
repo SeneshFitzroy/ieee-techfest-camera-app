@@ -395,19 +395,24 @@
 
         /* CAMERA PAGE */
         .camera-page {
-            padding: 120px 5% 100px;
+            padding: 100px 0 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .camera-wrapper {
-            max-width: 1000px;
             width: 100%;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0;
         }
 
         .camera-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            padding: 0 20px;
         }
 
         .section-title {
@@ -426,42 +431,73 @@
 
         .camera-viewport {
             position: relative;
-            width: 100%;
-            max-width: 800px;
-            aspect-ratio: 4 / 3;
+            width: 100vw;
+            height: calc(100vh - 180px);
+            max-width: 100%;
             background: #000;
-            border-radius: 24px;
+            border-radius: 0;
             overflow: hidden;
-            border: 2px solid var(--border);
+            border: none;
             box-shadow: 0 30px 80px rgba(0, 255, 0, 0.2);
-            margin: 0 auto 40px;
+            margin: 0 auto;
         }
         
-        /* Tablet landscape */
-        @media (min-width: 769px) and (max-width: 1024px) {
+        /* Large desktop - contained view */
+        @media (min-width: 1200px) {
             .camera-viewport {
-                max-width: 700px;
+                width: 90vw;
+                max-width: 1400px;
+                height: 80vh;
+                border-radius: 24px;
+                border: 2px solid var(--border);
             }
         }
         
-        /* Mobile portrait */
-        @media (max-width: 768px) {
+        /* Desktop - full width with borders */
+        @media (min-width: 769px) and (max-width: 1199px) {
             .camera-viewport {
-                max-width: 100%;
-                aspect-ratio: 3 / 4;
+                width: 95vw;
+                height: 75vh;
                 border-radius: 16px;
+                border: 2px solid var(--border);
+            }
+        }
+        
+        /* Mobile - full screen experience */
+        @media (max-width: 768px) {
+            .camera-page {
+                padding: 80px 0 60px;
             }
             
-            .camera-wrapper {
-                padding: 0 10px;
+            .camera-viewport {
+                width: 100vw;
+                height: calc(100vh - 140px);
+                border-radius: 0;
+                border: none;
+            }
+            
+            .camera-header {
+                margin-bottom: 20px;
+                padding: 0 15px;
+            }
+            
+            .section-title {
+                font-size: 32px;
+            }
+            
+            .section-subtitle {
+                font-size: 14px;
             }
         }
         
-        /* Small mobile */
+        /* Extra small mobile - ultra compact */
         @media (max-width: 480px) {
             .camera-viewport {
-                aspect-ratio: 9 / 16;
-                border-radius: 12px;
+                height: calc(100vh - 120px);
+            }
+            
+            .section-title {
+                font-size: 28px;
             }
         }
 
@@ -1432,16 +1468,8 @@
                         // Clear canvas
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         
-                        // Draw video frame (mirror for front camera)
-                        if (facingMode === 'user') {
-                            ctx.save();
-                            ctx.scale(-1, 1);
-                            ctx.translate(-canvas.width, 0);
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            ctx.restore();
-                        } else {
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        }
+                        // Draw video frame naturally (NO MIRROR)
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         
                         // Apply current filter
                         applyFilter(currentFilter);
