@@ -1,0 +1,7 @@
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" fill="#1a1a1a"/>
+  <circle cx="128" cy="100" r="50" stroke="#00ff00" stroke-width="4" fill="none"/>
+  <path d="M 128 50 L 128 80 M 128 120 L 128 150" stroke="#00ff00" stroke-width="4"/>
+  <text x="128" y="200" font-family="Arial" font-size="32" font-weight="800" fill="#00ff00" text-anchor="middle">CEYLON</text>
+  <text x="128" y="230" font-family="Arial" font-size="28" fill="#ffffff" text-anchor="middle">LABS</text>
+</svg>
