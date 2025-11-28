@@ -904,7 +904,7 @@
                 </div>
 
                 <div class="camera-viewport">
-                    <video id="webcam" style="display:none;" playsinline autoplay></video>
+                    <video id="webcam" playsinline autoplay muted style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"></video>
                     <canvas id="canvas"></canvas>
 
                     <!-- Professional IEEE TechFest Branded Frame -->
@@ -1266,25 +1266,32 @@
         // Camera
         async function initCamera() {
             if (cameraInitialized) {
-                console.log('Camera already initialized');
+                console.log('Camera already running');
                 return;
             }
             
             console.log('Initializing camera...');
-            cameraInitialized = true;
             
             try {
-                // Stop any existing stream first
+                // Stop any existing stream completely
                 if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
+                    stream.getTracks().forEach(track => {
+                        track.stop();
+                        console.log('Stopped track:', track.kind);
+                    });
+                    stream = null;
+                    video.srcObject = null;
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 }
                 
-                // Request camera with flexible dimensions
+                cameraInitialized = true;
+                
+                // Request camera access
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { 
                         facingMode,
-                        width: { ideal: 1280, max: 1920 },
-                        height: { ideal: 720, max: 1080 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     },
                     audio: false
                 });
@@ -1292,32 +1299,47 @@
                 console.log('✓ Camera stream obtained');
                 video.srcObject = stream;
                 
-                // Wait for metadata
+                // Wait for video to be ready
                 await new Promise((resolve) => {
                     video.onloadedmetadata = () => {
                         console.log('✓ Video ready:', video.videoWidth, 'x', video.videoHeight);
-                        
-                        // Set canvas dimensions to match video
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
-                        
-                        console.log('✓ Canvas configured:', canvas.width, 'x', canvas.height);
+                        console.log('✓ Canvas set to:', canvas.width, 'x', canvas.height);
                         resolve();
                     };
                 });
                 
                 // Play video
-                await video.play();
-                console.log('✓ Video playing');
+                try {
+                    await video.play();
+                    console.log('✓ Video playing');
+                } catch (playError) {
+                    console.error('Play error:', playError);
+                }
                 
-                // Start rendering
-                startRendering();
-                console.log('✓ Rendering started');
+                // Start rendering after small delay
+                setTimeout(() => {
+                    startRendering();
+                    console.log('✓ Rendering started');
+                }, 100);
                 
             } catch (error) {
-                console.error('❌ Camera error:', error);
+                console.error('❌ Camera error:', error.name, error.message);
                 cameraInitialized = false;
-                alert('Camera access failed: ' + error.message + '\n\nMake sure you allow camera permissions!');
+                
+                let errorMsg = 'Camera access failed: ';
+                if (error.name === 'NotAllowedError') {
+                    errorMsg += 'Permission denied. Please allow camera access.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg += 'No camera found on this device.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMsg += 'Camera is in use by another application.\n\nClose other apps (Teams, Zoom, WhatsApp, etc.) and refresh the page.';
+                } else {
+                    errorMsg += error.message;
+                }
+                
+                alert(errorMsg);
             }
         }
 
