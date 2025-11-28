@@ -1,58 +1,43 @@
-@echo off
-REM Use 'enabledelayedexpansion' to properly handle variables within loops/groups
-setlocal enabledelayedexpansion
+# --- CONFIGURATION ---
+$Year = 2024
+$AuthorName = "AutoBackfill"
+$FileName = "activity_filler.txt"
 
-REM --- 1. Define the Fixed Commit Date ---
-REM Date: Friday, October 3rd, 2025, 1:15:00 PM +0530 (Lanka Time)
-set "COMMIT_DATE=Fri Oct 3 13:15:00 2025 +0530"
+# Create a dummy file if it doesn't exist
+if (-not (Test-Path $FileName)) { New-Item $FileName -ItemType File }
 
-REM --- 2. Stage Changes ---
-echo Staging all changes with 'git add .'
-git add .
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo ❌ ERROR: 'git add .' failed. Is this a Git repository?
-    goto :CommitFailed
-)
+# Get the first and last day of 2024
+$StartDate = Get-Date -Date "$Year-01-01"
+$EndDate = Get-Date -Date "$Year-12-31"
 
-REM --- 3. Prepare Commit Message (File List and Changes) ---
-set "FILES="
-REM Use 'git diff --cached --name-only' to list staged files
-for /f "delims=" %%i in ('git diff --cached --name-only 2^>NUL') do set "FILES=%%i, !FILES!"
-set "FILES=!FILES: ~1!" REM Trim leading comma/space
+Write-Host "Starting backfill for year $Year..." -ForegroundColor Cyan
 
-set "CHANGES="
-REM Use 'git diff --cached' to capture the diff content
-REM The ^| findstr filter removes diff headers to clean up the message
-for /f "delims=" %%j in ('git diff --cached ^| findstr /v "^[+-][+-][+-]\|^index\|^---\|^+++"') do set "CHANGES=!CHANGES!%%j "
+# Loop through every single day of the year
+for ($date = $StartDate; $date -le $EndDate; $date = $date.AddDays(1)) {
+    
+    # 1. format the date for Git (ISO 8601)
+    $dateString = $date.ToString("yyyy-MM-dd HH:mm:ss")
+    
+    # 2. Modify a file so Git sees a change (append a dot)
+    Add-Content -Path $FileName -Value "."
+    
+    # 3. Stage the file
+    git add $FileName
+    
+    # 4. Commit with the specific backdated timestamp
+    # We use environment variables to force the date
+    $Env:GIT_COMMITTER_DATE = "$dateString"
+    $Env:GIT_AUTHOR_DATE = "$dateString"
+    
+    git commit -m "Backfill commit for $dateString" > $null
+    
+    Write-Host "Committed: $dateString" -ForegroundColor Green
+}
 
-set "CHANGES_SNIPPET=!CHANGES:~0,50!..."
-if not defined FILES set "FILES=(No staged files found)"
-if not defined CHANGES set "CHANGES_SNIPPET=(No visible changes)"
+# Clean up environment variables
+Remove-Item Env:\GIT_COMMITTER_DATE
+Remove-Item Env:\GIT_AUTHOR_DATE
 
-REM --- 4. Construct Final Message ---
-set "MSG=feat: Updated !FILES! - Changes: !CHANGES_SNIPPET! - Committed on October 3rd, 2025"
-
-REM --- 5. Set Environment Variable and Commit with the Desired Date ---
-echo.
-echo Attempting commit with date: %COMMIT_DATE%
-set "GIT_COMMITTER_DATE=!COMMIT_DATE!"
-git commit --date="!COMMIT_DATE!" -m "!MSG!"
-
-REM --- 6. Check for Errors and Push ---
-if !ERRORLEVEL! neq 0 (
-    goto :CommitFailed
-) else (
-    echo.
-    echo ✅ Commit successful! Date set to: Fri Oct 3, 2025.
-    echo.
-    git push origin main
-)
-
-goto :EOF
-
-:CommitFailed
-echo.
-echo ❌ Commit failed. Please run 'git commit' manually to see the error.
-pause
-endlocal
+Write-Host "------------------------------------------------"
+Write-Host "Success! 2024 is now fully covered." -ForegroundColor Yellow
+Write-Host "Run 'git push' to update your GitHub graph." -ForegroundColor Yellow
