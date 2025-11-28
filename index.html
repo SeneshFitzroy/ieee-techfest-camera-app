@@ -425,24 +425,31 @@
         .camera-viewport {
             position: relative;
             width: 100%;
-            aspect-ratio: 9 / 16;
+            max-width: 900px;
+            aspect-ratio: 16 / 9;
             background: #000;
             border-radius: 32px;
             overflow: hidden;
             border: 2px solid var(--border);
             box-shadow: 0 30px 80px rgba(0, 255, 0, 0.2);
-            margin-bottom: 40px;
+            margin: 0 auto 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .camera-viewport {
+                aspect-ratio: 3 / 4;
+            }
         }
 
         #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
             background: #000;
-            position: absolute;
-            top: 0;
-            left: 0;
             z-index: 1;
         }
 
@@ -1151,14 +1158,12 @@
         let capturedPhotos = [];
         let faceDetectionReady = false;
         let detectedFaces = [];
+        let cameraInitialized = false;
+        let isPortrait = false;
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true, willReadFrequently: true });
-
-        // Canvas size will be set dynamically based on video dimensions
-        canvas.width = 1080;
-        canvas.height = 1920;
 
         // Initialize Face Detection
         async function loadFaceDetection() {
@@ -1240,7 +1245,9 @@
             currentPage = pageName;
 
             if (pageName === 'camera') {
-                initCamera();
+                if (!cameraInitialized) {
+                    initCamera();
+                }
                 if (!faceDetectionReady) loadFaceDetection();
             }
             else if (pageName === 'gallery') loadGallery();
@@ -1258,44 +1265,64 @@
 
         // Camera
         async function initCamera() {
-            if (stream) return;
+            if (cameraInitialized) {
+                console.log('Camera already initialized');
+                return;
+            }
+            
             console.log('Initializing camera...');
+            cameraInitialized = true;
+            
             try {
+                // Stop any existing stream first
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Request camera with flexible dimensions
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { 
-                        facingMode, 
-                        width: { ideal: 1920 }, 
-                        height: { ideal: 1080 }
+                        facingMode,
+                        width: { ideal: 1280, max: 1920 },
+                        height: { ideal: 720, max: 1080 }
                     },
                     audio: false
                 });
+                
                 console.log('✓ Camera stream obtained');
                 video.srcObject = stream;
                 
-                video.onloadedmetadata = () => {
-                    console.log('✓ Video metadata loaded:', video.videoWidth, 'x', video.videoHeight);
-                    // Set canvas to video size
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    console.log('✓ Canvas set to:', canvas.width, 'x', canvas.height);
-                };
+                // Wait for metadata
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        console.log('✓ Video ready:', video.videoWidth, 'x', video.videoHeight);
+                        
+                        // Set canvas dimensions to match video
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        console.log('✓ Canvas configured:', canvas.width, 'x', canvas.height);
+                        resolve();
+                    };
+                });
                 
+                // Play video
                 await video.play();
                 console.log('✓ Video playing');
                 
-                // Wait a bit for video to be ready
-                setTimeout(() => {
-                    console.log('Starting render...');
-                    startRendering();
-                }, 100);
+                // Start rendering
+                startRendering();
+                console.log('✓ Rendering started');
                 
             } catch (error) {
                 console.error('❌ Camera error:', error);
-                alert('Unable to access camera. Error: ' + error.message);
+                cameraInitialized = false;
+                alert('Camera access failed: ' + error.message + '\n\nMake sure you allow camera permissions!');
             }
         }
 
         function stopCamera() {
+            console.log('Stopping camera...');
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
@@ -1305,23 +1332,29 @@
                 animationId = null;
             }
             detectedFaces = [];
+            cameraInitialized = false;
+            video.srcObject = null;
+            console.log('✓ Camera stopped');
         }
 
         function startRendering() {
-            console.log('Render function called');
             let frameCount = 0;
             
             function render() {
-                if (!video.paused && !video.ended && video.readyState >= 2) {
-                    // Simple draw - no mirroring, no filters first
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                if (video.readyState >= 2 && !video.paused) {
+                    // Mirror for front camera
+                    if (facingMode === 'user') {
+                        ctx.save();
+                        ctx.scale(-1, 1);
+                        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+                        ctx.restore();
+                    } else {
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    }
                     
                     frameCount++;
                     if (frameCount === 1) {
-                        console.log('✓✓✓ FIRST FRAME DRAWN! Video should be visible now!');
-                    }
-                    if (frameCount % 30 === 0) {
-                        console.log('Still rendering... frame', frameCount);
+                        console.log('✓✓✓ CAMERA LIVE!');
                     }
                 }
                 
@@ -1812,9 +1845,10 @@
 
         // Switch camera
         document.getElementById('switchBtn').addEventListener('click', async () => {
+            console.log('Switching camera...');
             facingMode = facingMode === 'user' ? 'environment' : 'user';
             stopCamera();
-            await initCamera();
+            setTimeout(() => initCamera(), 500);
         });
 
         // Gallery
