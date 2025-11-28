@@ -193,6 +193,62 @@
             color: #000;
             transform: translateY(-2px);
         }
+        
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 3%;
+                height: 70px;
+            }
+            
+            .brand-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .brand-title {
+                font-size: 16px;
+            }
+            
+            .brand-subtitle {
+                font-size: 9px;
+            }
+            
+            .nav-menu {
+                gap: 5px;
+            }
+            
+            .nav-link {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            nav {
+                height: 65px;
+            }
+            
+            .brand-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+            
+            .brand-title {
+                font-size: 14px;
+            }
+            
+            .brand-subtitle {
+                font-size: 8px;
+            }
+            
+            .nav-link {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
 
         /* Page Container */
         .page {
@@ -462,43 +518,80 @@
             }
         }
         
-        /* Mobile - full screen experience */
+        /* Tablet & Mobile - responsive experience */
         @media (max-width: 768px) {
             .camera-page {
-                padding: 80px 0 60px;
+                padding: 90px 0 20px;
             }
             
             .camera-viewport {
-                width: 95vw;
-                aspect-ratio: 4 / 3;
-                border-radius: 12px;
-                border: 1px solid var(--border);
+                width: 100vw;
+                max-width: 100%;
+                aspect-ratio: 3 / 4;
+                border-radius: 0;
+                border: none;
             }
             
             .camera-header {
-                margin-bottom: 20px;
+                margin-bottom: 15px;
                 padding: 0 15px;
             }
             
             .section-title {
-                font-size: 32px;
+                font-size: 28px;
             }
             
             .section-subtitle {
-                font-size: 14px;
+                font-size: 13px;
+            }
+            
+            .snap-filter-icon {
+                width: 60px !important;
+                height: 60px !important;
+            }
+            
+            .snap-filter-icon i {
+                font-size: 26px !important;
+            }
+            
+            .snap-filter-name {
+                font-size: 10px !important;
+            }
+            
+            .control-btn {
+                width: 55px !important;
+                height: 55px !important;
+                font-size: 20px !important;
+            }
+            
+            #captureBtn {
+                width: 70px !important;
+                height: 70px !important;
+                font-size: 28px !important;
             }
         }
         
-        /* Extra small mobile - ultra compact */
+        /* Extra small mobile - portrait mode */
         @media (max-width: 480px) {
             .camera-viewport {
-                width: 98vw;
-                aspect-ratio: 3 / 4;
-                border-radius: 8px;
+                width: 100vw;
+                aspect-ratio: 9 / 16;
             }
             
             .section-title {
-                font-size: 28px;
+                font-size: 24px;
+            }
+            
+            .section-subtitle {
+                font-size: 12px;
+            }
+            
+            nav {
+                padding: 15px 5% !important;
+            }
+            
+            .camera-controls {
+                gap: 20px !important;
             }
         }
 
@@ -740,6 +833,45 @@
 
         #captureBtn:hover {
             box-shadow: 0 15px 60px rgba(0, 255, 0, 0.6);
+        }
+        
+        /* Mobile responsive controls */
+        @media (max-width: 768px) {
+            .camera-controls {
+                gap: 20px;
+                margin-top: 20px;
+            }
+            
+            .control-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 20px;
+            }
+            
+            #captureBtn {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .camera-controls {
+                gap: 15px;
+                margin-top: 15px;
+            }
+            
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+            
+            #captureBtn {
+                width: 65px;
+                height: 65px;
+                font-size: 26px;
+            }
         }
 
         /* GALLERY */
@@ -992,16 +1124,16 @@
                     </div>
 
                     <!-- Bottom Bar with Partner Logos and Text -->
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%); padding: 15px 20px; z-index: 10; border-top: 2px solid #00ff00; pointer-events: none;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%); padding: 8px 15px; z-index: 10; border-top: 2px solid #00ff00; pointer-events: none;">
                         <!-- TechFest Logo in Middle -->
-                        <div style="text-align: center; margin-bottom: 10px;">
-                            <img src="assets/logos/techfest.png" alt="TechFest 2025" style="height: 50px; filter: drop-shadow(0 3px 15px rgba(0,255,0,0.6)); pointer-events: none;">
+                        <div style="text-align: center; margin-bottom: 5px;">
+                            <img src="assets/logos/techfest.png" alt="TechFest 2025" style="height: 35px; filter: drop-shadow(0 3px 15px rgba(0,255,0,0.6)); pointer-events: none;">
                         </div>
                         
                         <!-- Powered By Ceylon Labs -->
-                        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 8px;">
-                            <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); letter-spacing: 0.5px;">Powered by</span>
-                            <img src="assets/logos/ceylon-labs.png" alt="Ceylon Labs" style="height: 30px; filter: drop-shadow(0 2px 8px rgba(255,255,255,0.3)); pointer-events: none;">
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 3px;">
+                            <span style="font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.6); letter-spacing: 0.3px;">Powered by</span>
+                            <img src="assets/logos/ceylon-labs.png" alt="Ceylon Labs" style="height: 22px; filter: drop-shadow(0 2px 8px rgba(255,255,255,0.3)); pointer-events: none;">
                         </div>
                     </div>
 
@@ -1089,14 +1221,12 @@
                             border-color: rgba(0, 255, 0, 0.5);
                             transform: scale(1.08);
                         }
-                        .snap-filter-icon i {
-                            font-size: 30px;
-                            color: rgba(255, 255, 255, 0.8);
-                            transition: all 0.3s ease;
+                        .snap-filter-icon {
+                            font-size: 32px;
+                            line-height: 1;
                         }
-                        .snap-filter-card.active .snap-filter-icon i {
-                            color: #00ff00;
-                            text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+                        .snap-filter-card.active .snap-filter-icon {
+                            filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.8));
                         }
                         .snap-filter-name {
                             font-size: 11px;
@@ -1114,61 +1244,61 @@
                     <div class="snapchat-filters">
                         <div class="snap-filter-card active" data-filter="original">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-camera"></i>
+                                📷
                             </div>
                             <div class="snap-filter-name">Original</div>
                         </div>
                         <div class="snap-filter-card" data-filter="dogears">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-dog"></i>
+                                🐶
                             </div>
                             <div class="snap-filter-name">Dog Ears</div>
                         </div>
                         <div class="snap-filter-card" data-filter="glasses">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-glasses"></i>
+                                🕶️
                             </div>
                             <div class="snap-filter-name">Glasses</div>
                         </div>
                         <div class="snap-filter-card" data-filter="crown">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-crown"></i>
+                                👑
                             </div>
                             <div class="snap-filter-name">Crown</div>
                         </div>
                         <div class="snap-filter-card" data-filter="hearts">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-heart"></i>
+                                💕
                             </div>
                             <div class="snap-filter-name">Hearts</div>
                         </div>
                         <div class="snap-filter-card" data-filter="sparkle">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-sparkles"></i>
+                                ✨
                             </div>
                             <div class="snap-filter-name">Sparkle</div>
                         </div>
                         <div class="snap-filter-card" data-filter="techverse">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-rocket"></i>
+                                🚀
                             </div>
                             <div class="snap-filter-name">TechVerse</div>
                         </div>
                         <div class="snap-filter-card" data-filter="neon">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-bolt"></i>
+                                ⚡
                             </div>
                             <div class="snap-filter-name">Neon</div>
                         </div>
                         <div class="snap-filter-card" data-filter="cyberpunk">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-microchip"></i>
+                                🤖
                             </div>
                             <div class="snap-filter-name">Cyberpunk</div>
                         </div>
                         <div class="snap-filter-card" data-filter="vintage">
                             <div class="snap-filter-icon">
-                                <i class="fas fa-film"></i>
+                                📼
                             </div>
                             <div class="snap-filter-name">Vintage</div>
                         </div>
@@ -1630,13 +1760,6 @@
             // Apply the modified image data back to canvas
             ctx.putImageData(imageData, 0, 0);
         }
-                        }
-                    }
-                    break;
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-        }
 
         // Professional Face AR Filters
         function drawFaceARFilter(filterType) {
@@ -1877,6 +2000,11 @@
                 
                 // Visual feedback
                 console.log('🎨 Filter changed to:', currentFilter);
+                console.log('✅ Filter is now active and will apply in real-time');
+                
+                // Show temporary notification
+                const filterName = this.querySelector('.snap-filter-name').textContent;
+                console.log('📸 ' + filterName + ' filter active!');
                 
                 // Haptic feedback for mobile (if supported)
                 if (navigator.vibrate) {
@@ -1884,6 +2012,13 @@
                 }
             });
         });
+        
+        // Debug: Log current filter every 3 seconds
+        setInterval(() => {
+            if (currentPage === 'camera') {
+                console.log('🎬 Current active filter:', currentFilter);
+            }
+        }, 3000);
 
         // Capture Photo with Branding Overlay
         document.getElementById('captureBtn').addEventListener('click', async () => {
