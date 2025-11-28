@@ -438,6 +438,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
+            background: #000;
         }
 
         .camera-overlay {
@@ -1256,35 +1258,36 @@
             console.log('Initializing camera...');
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode, width: { ideal: 1080 }, height: { ideal: 1920 }, aspectRatio: { ideal: 9/16 } },
+                    video: { 
+                        facingMode, 
+                        width: { ideal: 1920 }, 
+                        height: { ideal: 1080 }
+                    },
                     audio: false
                 });
-                console.log('Camera stream obtained');
+                console.log('✓ Camera stream obtained');
                 video.srcObject = stream;
                 
                 video.onloadedmetadata = () => {
-                    console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
-                    
-                    // Set canvas to match video aspect ratio
-                    if (video.videoWidth && video.videoHeight) {
-                        const aspectRatio = video.videoWidth / video.videoHeight;
-                        if (aspectRatio > 0.5625) { // wider than 9:16
-                            canvas.width = 1080;
-                            canvas.height = Math.round(1080 / aspectRatio);
-                        } else {
-                            canvas.height = 1920;
-                            canvas.width = Math.round(1920 * aspectRatio);
-                        }
-                        console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
-                    }
+                    console.log('✓ Video metadata loaded:', video.videoWidth, 'x', video.videoHeight);
+                    // Set canvas to video size
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    console.log('✓ Canvas set to:', canvas.width, 'x', canvas.height);
                 };
                 
                 await video.play();
-                console.log('Video playing, starting render...');
-                startRendering();
+                console.log('✓ Video playing');
+                
+                // Wait a bit for video to be ready
+                setTimeout(() => {
+                    console.log('Starting render...');
+                    startRendering();
+                }, 100);
+                
             } catch (error) {
-                console.error('Camera error:', error);
-                alert('Unable to access camera. Please allow permissions.');
+                console.error('❌ Camera error:', error);
+                alert('Unable to access camera. Error: ' + error.message);
             }
         }
 
@@ -1301,54 +1304,27 @@
         }
 
         function startRendering() {
-            let lastFrameTime = 0;
-            const fps = 30; // Limit to 30 FPS to prevent flickering
-            const frameInterval = 1000 / fps;
+            console.log('Render function called');
             let frameCount = 0;
             
-            function render(currentTime) {
-                animationId = requestAnimationFrame(render);
-                
-                if (currentTime - lastFrameTime < frameInterval) return;
-                lastFrameTime = currentTime;
-                
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            function render() {
+                if (!video.paused && !video.ended && video.readyState >= 2) {
+                    // Simple draw - no mirroring, no filters first
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
                     frameCount++;
                     if (frameCount === 1) {
-                        console.log('First frame rendering, video ready state:', video.readyState);
-                        console.log('Canvas size:', canvas.width, 'x', canvas.height);
-                        console.log('Video size:', video.videoWidth, 'x', video.videoHeight);
+                        console.log('✓✓✓ FIRST FRAME DRAWN! Video should be visible now!');
                     }
-                    
-                    // Draw mirrored video - always draw the video first
-                    ctx.save();
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-                    ctx.restore();
-                    
-                    if (frameCount === 1) {
-                        console.log('✓ First frame drawn successfully');
-                    }
-                    
-                    // Apply color filter if selected (not face AR filters)
-                    const faceARFilters = ['dogears', 'glasses', 'crown', 'hearts', 'sparkle'];
-                    if (currentFilter !== 'original' && !faceARFilters.includes(currentFilter)) {
-                        applyFilter(currentFilter);
-                    }
-                    
-                    // Draw AR face filters on top of video
-                    if (faceARFilters.includes(currentFilter)) {
-                        drawFaceARFilter(currentFilter);
-                    }
-                    
-                    // Detect faces in background (non-blocking)
-                    if (faceARFilters.includes(currentFilter)) {
-                        detectFaces();
+                    if (frameCount % 30 === 0) {
+                        console.log('Still rendering... frame', frameCount);
                     }
                 }
+                
+                animationId = requestAnimationFrame(render);
             }
-            console.log('Starting render loop...');
-            render(0);
+            
+            render();
         }
 
         // Professional Trending Filters (Instagram/Snapchat Style)
