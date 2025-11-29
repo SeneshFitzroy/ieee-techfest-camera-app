@@ -195,6 +195,24 @@
             border-color: rgba(255, 51, 51, 0.3);
         }
 
+        /* Play prompt shown when autoplay is blocked */
+        .music-play-prompt {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 999px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            border: 1px solid rgba(0,255,0,0.12);
+            cursor: pointer;
+        }
+        .music-play-prompt i { color: #00ff44; }
+
         .nav-link {
             padding: 12px 24px;
             border-radius: 50px;
@@ -1492,6 +1510,12 @@
         </div>
     </nav>
 
+    <!-- Play prompt shown when autoplay is blocked -->
+    <div id="musicPlayPrompt" class="music-play-prompt" title="Click to enable music">
+        <i class="fas fa-play"></i>
+        <span style="font-weight:700;">Play Music</span>
+    </div>
+
     <!-- Flash Effect -->
     <div id="flashEffect"></div>
 
@@ -1830,20 +1854,27 @@
 
         // Try to autoplay music (with user interaction fallback)
         function initMusic() {
-            bgMusic.volume = 0.5; // Set volume to 50%
-            bgMusic.load(); // Ensure audio is loaded
-            bgMusic.play().then(() => {
-                isMusicPlaying = true;
-                musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
-                musicToggle.classList.remove('muted');
-                console.log('✅ Music playing at volume:', bgMusic.volume);
-            }).catch((error) => {
-                // Autoplay blocked, wait for user interaction
-                console.log('⚠️ Autoplay blocked:', error.message);
-                isMusicPlaying = false;
-                musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                musicToggle.classList.add('muted');
-            });
+                // Ensure audio is unmuted and audible
+                bgMusic.muted = false;
+                bgMusic.volume = 0.8; // Set volume to 80% for better audibility
+                bgMusic.load(); // Ensure audio is loaded
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    musicToggle.classList.remove('muted');
+                    // Hide play prompt if visible
+                    const prompt = document.getElementById('musicPlayPrompt');
+                    if (prompt) prompt.style.display = 'none';
+                    console.log('✅ Music playing at volume:', bgMusic.volume);
+                }).catch((error) => {
+                    // Autoplay blocked, show visible play prompt for user
+                    console.log('⚠️ Autoplay blocked:', error && error.message ? error.message : error);
+                    isMusicPlaying = false;
+                    musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    musicToggle.classList.add('muted');
+                    const prompt = document.getElementById('musicPlayPrompt');
+                    if (prompt) prompt.style.display = 'flex';
+                });
         }
 
         // Music toggle button
@@ -1855,7 +1886,8 @@
                 isMusicPlaying = false;
                 console.log('🔇 Music paused');
             } else {
-                bgMusic.volume = 0.5;
+                bgMusic.muted = false;
+                bgMusic.volume = 0.8;
                 bgMusic.play().then(() => {
                     musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
                     musicToggle.classList.remove('muted');
