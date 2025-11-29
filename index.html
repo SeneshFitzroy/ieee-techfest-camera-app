@@ -798,10 +798,22 @@
             color: #000;
             font-size: 32px;
             box-shadow: 0 10px 40px rgba(0, 255, 0, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 40px rgba(0, 255, 0, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 60px rgba(0, 255, 0, 0.6); }
         }
 
         #captureBtn:hover {
+            animation: none;
+            transform: scale(1.1);
             box-shadow: 0 15px 60px rgba(0, 255, 0, 0.6);
+        }
+        
+        #captureBtn:active {
+            transform: scale(0.95);
         }
 
         @media (max-width: 768px) {
@@ -1092,7 +1104,6 @@
         <div class="nav-menu">
             <a href="#" class="nav-link active" data-page="home">Home</a>
             <a href="#" class="nav-link" data-page="camera">Camera</a>
-            <a href="#" class="nav-link" data-page="gallery">Gallery</a>
         </div>
     </nav>
 
@@ -1316,12 +1327,9 @@
                     <button class="control-btn" id="switchBtn" title="Switch Camera">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <button class="control-btn" id="captureBtn" title="Capture Photo">
+                    <button class="control-btn capture-btn" id="captureBtn" title="Capture Photo">
                         <i class="fas fa-camera"></i>
                     </button>
-                    <button class="control-btn" onclick="navigateToPage('gallery')" title="View Gallery">
-                        <i class="fas fa-images"></i>
-                    </button>
                 </div>
             </div>
 
@@ -1337,39 +1345,20 @@
         </div>
     </div>
 
-    <!-- GALLERY PAGE -->
-    <div id="galleryPage" class="page" style="background: #000000 !important; min-height: 100vh !important;">
-        <div class="gallery-page" style="padding: 120px 5% 100px !important; min-height: 100vh !important; background: transparent !important;">
-            <div class="camera-header" style="margin-bottom: 40px !important; text-align: center !important;">
-                <h2 class="section-title" style="color: #00ff00 !important; font-size: 48px !important; margin-bottom: 10px !important;">Photo Gallery</h2>
-                <p class="section-subtitle" style="color: #ffffff !important; font-size: 20px !important;">Your TechFest captured moments</p>
+    <!-- GALLERY PAGE - REMOVED, AUTO DOWNLOAD INSTEAD -->
+    <div id="galleryPage" class="page">
+        <div style="padding: 100px 20px 50px 20px; min-height: 100vh; background: #0a0a0a; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <i class="fas fa-check-circle" style="font-size: 80px; color: #00ff00; margin-bottom: 30px;"></i>
+            <h1 style="color: #00ff00; font-size: 36px; margin-bottom: 15px;">Photos Auto-Download!</h1>
+            <p style="color: #888; font-size: 18px; margin-bottom: 40px; max-width: 400px;">Your photos are automatically saved to your device when captured.</p>
+            <button onclick="navigateToPage('camera')" style="padding: 18px 50px; background: linear-gradient(135deg, #00ff00, #00cc00); border: none; border-radius: 30px; color: #000; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-camera"></i> Take More Photos
+            </button>
+            
+            <div style="margin-top: 60px;">
+                <img src="assets/logos/2.png" alt="Ceylon Labs" style="height: 50px; margin-bottom: 15px;">
+                <p style="color: #666; font-size: 14px;">Official AR Camera Platform • IEEE TechFest 2025</p>
             </div>
-
-            <div id="galleryGrid" class="gallery-grid" style="display: grid !important; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; gap: 24px !important; max-width: 1400px !important; margin: 0 auto 60px !important; padding: 20px !important; background: rgba(0,255,0,0.1) !important; min-height: 300px !important;"></div>
-
-            <div id="galleryEmpty" class="gallery-empty" style="display: none;">
-                <div class="empty-icon">
-                    <i class="fas fa-images"></i>
-                </div>
-                <div class="empty-text">No photos yet</div>
-                <button class="cta-button" onclick="navigateToPage('camera')">
-                    <i class="fas fa-camera cta-icon"></i>
-                    Capture Your First Photo
-                </button>
-            </div>
-
-            <footer>
-                <div class="footer-content">
-                    <img src="assets/logos/2.png" alt="Ceylon Labs" class="footer-logo">
-                    <div class="footer-text">
-                        <span class="footer-highlight">Official AR Camera Platform</span><br>
-                        IEEE TechFest Sri Lanka 2025
-                    </div>
-                </div>
-            </footer>
-        </div>
-    </div>
-            </footer>
         </div>
     </div>
 
@@ -1396,6 +1385,18 @@
         let detectedFaces = [];
         let cameraInitialized = false;
         let isPortrait = false;
+        
+        // Load existing photos from localStorage (with error handling)
+        try {
+            const stored = localStorage.getItem('techfest_photos');
+            if (stored) {
+                capturedPhotos = JSON.parse(stored);
+                console.log('📦 Loaded', capturedPhotos.length, 'photos from storage');
+            }
+        } catch(e) {
+            console.warn('⚠️ Could not load from localStorage:', e);
+            capturedPhotos = [];
+        }
 
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('canvas');
@@ -1488,7 +1489,6 @@
             }
             else if (pageName === 'gallery') {
                 console.log('🎯 Navigating to gallery page');
-                loadGallery();
             }
             else stopCamera();
 
@@ -2103,28 +2103,70 @@
             tempCtx.textAlign = 'right';
             tempCtx.fillText(new Date().toLocaleDateString(), tempCanvas.width - 40, bottomY - 20);
             
-            // Convert to blob and save
+            // Convert to blob and AUTO-DOWNLOAD
             tempCanvas.toBlob((blob) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const photoData = {
-                        id: Date.now(),
-                        data: reader.result,
-                        filter: currentFilter,
-                        timestamp: new Date().toLocaleString()
-                    };
-                    capturedPhotos.push(photoData);
-                    localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
-                    console.log('✅ Photo saved! Total photos:', capturedPhotos.length);
-                    
-                    // Auto-redirect to gallery
-                    setTimeout(() => {
-                        navigateToPage('gallery');
-                    }, 500);
-                };
-                reader.readAsDataURL(blob);
-            }, 'image/jpeg', 0.95);
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `TechFest-2025-${Date.now()}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log('✅ Photo downloaded!');
+                
+                // Show success message
+                showDownloadSuccess();
+            }, 'image/jpeg', 0.92);
         });
+        
+        // Show download success notification
+        function showDownloadSuccess() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #00ff00, #00cc00);
+                color: #000;
+                padding: 15px 30px;
+                border-radius: 50px;
+                font-size: 16px;
+                font-weight: bold;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 10px 40px rgba(0,255,0,0.4);
+                animation: slideUp 0.3s ease;
+            `;
+            notification.innerHTML = '<i class="fas fa-check-circle"></i> Photo Saved to Device!';
+            document.body.appendChild(notification);
+            
+            // Add animation keyframes
+            if (!document.getElementById('notificationStyles')) {
+                const style = document.createElement('style');
+                style.id = 'notificationStyles';
+                style.textContent = `
+                    @keyframes slideUp {
+                        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Remove after 2 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(20px)';
+                notification.style.transition = 'all 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
         
         // Helper function to load images
         function loadImage(src) {
@@ -2160,6 +2202,9 @@
                 return;
             }
 
+            // Clear and reset
+            grid.innerHTML = '';
+            
             if (capturedPhotos.length === 0) {
                 console.log('⚠️ No photos - showing empty state');
                 grid.style.display = 'none';
@@ -2168,116 +2213,63 @@
             }
 
             console.log('✅ Displaying', capturedPhotos.length, 'photos');
-            grid.style.display = 'grid !important';
+            grid.style.display = 'grid';
             grid.style.visibility = 'visible';
-            grid.innerHTML = '';
+            grid.style.opacity = '1';
             empty.style.display = 'none';
-
-            // FORCE GRID TO BE VISIBLE
+            
+            // Scroll to gallery after a short delay
             setTimeout(() => {
-                grid.style.opacity = '1';
-                grid.style.display = 'grid';
+                grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
 
-            // Display photos in reverse chronological order (newest first)
+            // Display photos
             capturedPhotos.slice().reverse().forEach((photo, index) => {
                 console.log(`📷 Photo ${index + 1}: ID ${photo.id}`);
                 
-                const item = document.createElement('div');
-                item.className = 'gallery-photo-item';
-                item.style.cssText = `
-                    position: relative !important;
-                    width: 100% !important;
-                    aspect-ratio: 9/16 !important;
-                    min-height: 500px !important;
-                    background: #ff0000 !important;
-                    border-radius: 20px !important;
-                    overflow: hidden !important;
-                    border: 5px solid #00ff00 !important;
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                `;
+                // Create card with FIXED HEIGHT
+                const card = document.createElement('div');
+                card.style.cssText = 'position:relative; width:100%; min-height:400px; height:auto; background:#111; border-radius:16px; overflow:hidden; border:3px solid #00ff00; display:block; visibility:visible;';
                 
+                // Create image with explicit dimensions
                 const img = document.createElement('img');
                 img.src = photo.data;
-                img.style.cssText = `
-                    width: 100% !important;
-                    height: 100% !important;
-                    object-fit: cover !important;
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                `;
-                
+                img.style.cssText = 'width:100%; height:400px; object-fit:cover; display:block; visibility:visible;';
                 img.onload = () => console.log('✅ Image loaded:', photo.id);
-                img.onerror = () => console.error('❌ Image load failed:', photo.id);
+                img.onerror = () => console.error('❌ Image failed:', photo.id);
                 
-                const overlay = document.createElement('div');
-                overlay.style.cssText = `
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    padding: 20px;
-                    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-                    display: flex;
-                    gap: 10px;
-                    justify-content: center;
-                    opacity: 0;
-                    transition: opacity 0.3s;
-                `;
+                // Create buttons container
+                const btns = document.createElement('div');
+                btns.style.cssText = 'position:absolute; bottom:0; left:0; right:0; padding:15px; background:linear-gradient(transparent, rgba(0,0,0,0.9)); display:flex; gap:10px; justify-content:center;';
                 
-                item.onmouseenter = () => overlay.style.opacity = '1';
-                item.onmouseleave = () => overlay.style.opacity = '0';
-                
-                const downloadBtn = document.createElement('button');
-                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
-                downloadBtn.style.cssText = `
-                    padding: 10px 20px;
-                    background: rgba(0,255,0,0.2);
-                    border: 2px solid #00ff00;
-                    border-radius: 10px;
-                    color: #00ff00;
-                    font-size: 14px;
-                    font-weight: 600;
-                    cursor: pointer;
-                `;
-                downloadBtn.onclick = () => {
+                // Download button
+                const dlBtn = document.createElement('button');
+                dlBtn.innerHTML = '<i class="fas fa-download"></i> Save';
+                dlBtn.style.cssText = 'padding:10px 25px; background:#00ff00; border:none; border-radius:8px; color:#000; font-weight:bold; cursor:pointer;';
+                dlBtn.onclick = () => {
                     const a = document.createElement('a');
                     a.href = photo.data;
-                    a.download = `TechFest-${photo.id}.jpg`;
+                    a.download = 'TechFest-' + photo.id + '.jpg';
                     a.click();
                 };
                 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-                deleteBtn.style.cssText = `
-                    padding: 10px 20px;
-                    background: rgba(255,0,0,0.2);
-                    border: 2px solid #ff0000;
-                    border-radius: 10px;
-                    color: #ff0000;
-                    font-size: 14px;
-                    font-weight: 600;
-                    cursor: pointer;
-                `;
-                deleteBtn.onclick = () => {
-                    if (confirm('Delete this photo?')) {
+                // Delete button  
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                delBtn.style.cssText = 'padding:10px 25px; background:#ff3333; border:none; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer;';
+                delBtn.onclick = () => {
+                    if(confirm('Delete this photo?')) {
                         capturedPhotos = capturedPhotos.filter(p => p.id !== photo.id);
                         localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
                         loadGallery();
                     }
                 };
                 
-                overlay.appendChild(downloadBtn);
-                overlay.appendChild(deleteBtn);
-                item.appendChild(img);
-                item.appendChild(overlay);
-                grid.appendChild(item);
+                btns.appendChild(dlBtn);
+                btns.appendChild(delBtn);
+                card.appendChild(img);
+                card.appendChild(btns);
+                grid.appendChild(card);
             });
             
             console.log('✅ Gallery populated with', grid.children.length, 'items');
@@ -2298,7 +2290,18 @@
         window.deletePhoto = function(id) {
             if (confirm('Delete this photo permanently?')) {
                 capturedPhotos = capturedPhotos.filter(p => p.id !== id);
-                localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
+                try {
+                    localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
+                } catch(e) {}
+                loadGallery();
+            }
+        };
+        
+        window.clearAllPhotos = function() {
+            if (confirm('Delete ALL photos? This cannot be undone!')) {
+                capturedPhotos = [];
+                localStorage.removeItem('techfest_photos');
+                console.log('🗑️ All photos cleared!');
                 loadGallery();
             }
         };
