@@ -6,11 +6,15 @@
     <meta name="theme-color" content="#0a0a0a">
     <title>IEEE TechFest 2025 | AR Camera Studio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <!-- Face Detection Library -->
     <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     <!-- Background Music -->
-    <audio id="bgMusic" loop>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3" type="audio/mpeg">
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
     </audio>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Roboto+Condensed:wght@400;600;700&display=swap');
@@ -249,6 +253,33 @@
             padding: 100px 5% 80px;
             text-align: center;
             position: relative;
+            overflow: hidden;
+        }
+
+        /* GSAP Animation Initial States */
+        .gsap-fade-up {
+            opacity: 0;
+            transform: translateY(60px);
+        }
+
+        .gsap-fade-left {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        .gsap-fade-right {
+            opacity: 0;
+            transform: translateX(60px);
+        }
+
+        .gsap-scale {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .gsap-rotate {
+            opacity: 0;
+            transform: rotate(-10deg) scale(0.9);
         }
 
         .hero-3d-element {
@@ -1371,14 +1402,14 @@
             <div class="hero-3d-element" style="top: 20%; left: 10%;"></div>
             <div class="hero-3d-element" style="bottom: 20%; right: 10%; animation-delay: -4s;"></div>
 
-            <h1 class="hero-title">IEEE TECHFEST 2025</h1>
-            <p class="hero-subtitle">Where Innovation Meets Excellence</p>
-            <p class="hero-tagline">
+            <h1 class="hero-title gsap-scale">IEEE TECHFEST 2025</h1>
+            <p class="hero-subtitle gsap-fade-up" data-delay="0.2">Where Innovation Meets Excellence</p>
+            <p class="hero-tagline gsap-fade-up" data-delay="0.4">
                 Join Sri Lanka's most anticipated technology festival featuring cutting-edge exhibitions,<br>
                 inspiring talks, and the ultimate AR Camera experience
             </p>
 
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
+            <div class="gsap-fade-up" data-delay="0.6" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
                 <button class="cta-button" onclick="navigateToPage('camera')">
                     <i class="fas fa-camera cta-icon"></i>
                     Launch AR Camera
@@ -1391,22 +1422,22 @@
             </div>
 
             <!-- Event Countdown -->
-            <div class="countdown-section">
+            <div class="countdown-section gsap-fade-up" data-delay="0.8">
                 <div class="countdown-title">Event Countdown</div>
                 <div class="countdown-grid">
-                    <div class="countdown-item">
+                    <div class="countdown-item gsap-scale" data-delay="1.0">
                         <div class="countdown-number" id="days">00</div>
                         <div class="countdown-label">Days</div>
                     </div>
-                    <div class="countdown-item">
+                    <div class="countdown-item gsap-scale" data-delay="1.1">
                         <div class="countdown-number" id="hours">00</div>
                         <div class="countdown-label">Hours</div>
                     </div>
-                    <div class="countdown-item">
+                    <div class="countdown-item gsap-scale" data-delay="1.2">
                         <div class="countdown-number" id="minutes">00</div>
                         <div class="countdown-label">Minutes</div>
                     </div>
-                    <div class="countdown-item">
+                    <div class="countdown-item gsap-scale" data-delay="1.3">
                         <div class="countdown-number" id="seconds">00</div>
                         <div class="countdown-label">Seconds</div>
                     </div>
@@ -1415,7 +1446,7 @@
 
             <!-- Event Info -->
             <div class="event-info">
-                <div class="info-card" onclick="addToCalendar()" style="cursor: pointer;">
+                <div class="info-card gsap-fade-left" onclick="addToCalendar()" style="cursor: pointer;">
                     <div class="info-icon"><i class="fas fa-calendar-check"></i></div>
                     <div class="info-title">Date & Time</div>
                     <div class="info-value">December 20, 2025<br>10:00 AM - 8:00 PM</div>
@@ -1423,7 +1454,7 @@
                         <i class="fas fa-plus-circle"></i> Add to Calendar
                     </div>
                 </div>
-                <div class="info-card" onclick="window.open('https://maps.app.goo.gl/F2R1BNmiPsBxHQrd9', '_blank')" style="cursor: pointer;">
+                <div class="info-card gsap-fade-right" onclick="window.open('https://maps.app.goo.gl/F2R1BNmiPsBxHQrd9', '_blank')" style="cursor: pointer;">
                     <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
                     <div class="info-title">Venue</div>
                     <div class="info-value">Trace Expert City<br>Colombo, Sri Lanka</div>
@@ -1435,14 +1466,14 @@
 
             <!-- Organizing Partners -->
             <div class="partners-section">
-                <h2 class="section-heading">Organized By</h2>
+                <h2 class="section-heading gsap-fade-up">Organized By</h2>
                 <div class="partners-grid">
-                    <div class="partner-card">
+                    <div class="partner-card gsap-rotate" data-delay="0.2">
                         <img src="assets/logos/techverse.png" alt="IEEE Techverse SL" class="partner-logo">
                         <div class="partner-name">IEEE Techverse Sri Lanka</div>
                         <div class="partner-desc">Flagship initiative dedicated to enlightening and empowering young tech enthusiasts across the nation.</div>
                     </div>
-                    <div class="partner-card">
+                    <div class="partner-card gsap-rotate" data-delay="0.4">
                         <img src="assets/logos/slsac.png" alt="SLSAC" class="partner-logo">
                         <div class="partner-name">Sri Lanka SAC</div>
                         <div class="partner-desc">Empowering student engineers to lead and innovate. Connecting academia, industry, and global tech communities.</div>
@@ -1715,14 +1746,16 @@
 
         // Try to autoplay music (with user interaction fallback)
         function initMusic() {
-            bgMusic.volume = 0.3; // Set volume to 30%
+            bgMusic.volume = 0.5; // Set volume to 50%
+            bgMusic.load(); // Ensure audio is loaded
             bgMusic.play().then(() => {
                 isMusicPlaying = true;
                 musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
                 musicToggle.classList.remove('muted');
-            }).catch(() => {
+                console.log('✅ Music playing at volume:', bgMusic.volume);
+            }).catch((error) => {
                 // Autoplay blocked, wait for user interaction
-                console.log('Autoplay blocked, waiting for user interaction');
+                console.log('⚠️ Autoplay blocked:', error.message);
                 isMusicPlaying = false;
                 musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
                 musicToggle.classList.add('muted');
@@ -1736,24 +1769,217 @@
                 musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
                 musicToggle.classList.add('muted');
                 isMusicPlaying = false;
+                console.log('🔇 Music paused');
             } else {
-                bgMusic.play();
-                musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
-                musicToggle.classList.remove('muted');
-                isMusicPlaying = true;
+                bgMusic.volume = 0.5;
+                bgMusic.play().then(() => {
+                    musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    musicToggle.classList.remove('muted');
+                    isMusicPlaying = true;
+                    console.log('🔊 Music playing at volume:', bgMusic.volume);
+                }).catch(err => {
+                    console.error('❌ Play failed:', err);
+                });
             }
         });
 
         // Try to start music on page load
-        initMusic();
+        setTimeout(() => {
+            initMusic();
+        }, 500);
 
-        // Also try to start on first user interaction
-        document.addEventListener('click', function startOnInteraction() {
+        // Also try to start on first user interaction (any click, touch, or keypress)
+        const startMusicOnInteraction = () => {
             if (!isMusicPlaying) {
+                console.log('👆 User interaction detected, starting music...');
                 initMusic();
             }
-            document.removeEventListener('click', startOnInteraction);
-        }, { once: true });
+        };
+        
+        document.addEventListener('click', startMusicOnInteraction, { once: true });
+        document.addEventListener('touchstart', startMusicOnInteraction, { once: true });
+        document.addEventListener('keydown', startMusicOnInteraction, { once: true });
+
+        // Add visual feedback when music state changes
+        bgMusic.addEventListener('playing', () => {
+            console.log('▶️ Music is now playing');
+        });
+        
+        bgMusic.addEventListener('pause', () => {
+            console.log('⏸️ Music is paused');
+        });
+        
+        bgMusic.addEventListener('error', (e) => {
+            console.error('❌ Audio error:', e);
+        });
+
+        // GSAP Scroll Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate hero elements on load
+        gsap.to('.hero-title', {
+            opacity: 1,
+            scale: 1,
+            duration: 1.2,
+            ease: 'elastic.out(1, 0.8)',
+            delay: 0.3
+        });
+
+        // Animate elements with data-delay attributes
+        document.querySelectorAll('.gsap-fade-up').forEach((element, index) => {
+            const delay = parseFloat(element.getAttribute('data-delay')) || index * 0.1;
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 85%',
+                    end: 'bottom 20%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: delay,
+                ease: 'power3.out'
+            });
+        });
+
+        // Animate scale elements
+        document.querySelectorAll('.gsap-scale').forEach((element, index) => {
+            const delay = parseFloat(element.getAttribute('data-delay')) || index * 0.15;
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 1,
+                scale: 1,
+                duration: 0.8,
+                delay: delay,
+                ease: 'back.out(1.7)'
+            });
+        });
+
+        // Animate from left
+        document.querySelectorAll('.gsap-fade-left').forEach((element) => {
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 1,
+                x: 0,
+                duration: 1.2,
+                ease: 'power4.out'
+            });
+        });
+
+        // Animate from right
+        document.querySelectorAll('.gsap-fade-right').forEach((element) => {
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 1,
+                x: 0,
+                duration: 1.2,
+                ease: 'power4.out'
+            });
+        });
+
+        // Animate rotate elements
+        document.querySelectorAll('.gsap-rotate').forEach((element, index) => {
+            const delay = parseFloat(element.getAttribute('data-delay')) || index * 0.2;
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 1,
+                rotation: 0,
+                scale: 1,
+                duration: 1,
+                delay: delay,
+                ease: 'back.out(1.4)'
+            });
+        });
+
+        // Parallax effect for hero 3D elements
+        gsap.to('.hero-3d-element', {
+            scrollTrigger: {
+                trigger: '.hero',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 1
+            },
+            y: 300,
+            opacity: 0,
+            ease: 'none'
+        });
+
+        // Countdown numbers pulse animation
+        gsap.to('.countdown-number', {
+            scrollTrigger: {
+                trigger: '.countdown-section',
+                start: 'top 70%',
+                toggleActions: 'play none none reverse'
+            },
+            textShadow: '0 0 40px rgba(0, 255, 0, 0.8)',
+            duration: 0.5,
+            repeat: 2,
+            yoyo: true,
+            ease: 'power2.inOut',
+            stagger: 0.1
+        });
+
+        // Partner logos hover animation enhancement
+        document.querySelectorAll('.partner-logo').forEach(logo => {
+            logo.addEventListener('mouseenter', () => {
+                gsap.to(logo, {
+                    scale: 1.1,
+                    rotation: 5,
+                    duration: 0.3,
+                    ease: 'back.out(2)'
+                });
+            });
+            logo.addEventListener('mouseleave', () => {
+                gsap.to(logo, {
+                    scale: 1,
+                    rotation: 0,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            });
+        });
+
+        // Info cards magnetic effect
+        document.querySelectorAll('.info-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                gsap.to(card, {
+                    x: x * 0.1,
+                    y: y * 0.1,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.5,
+                    ease: 'elastic.out(1, 0.5)'
+                });
+            });
+        });
 
         // State
         let currentPage = 'home';
