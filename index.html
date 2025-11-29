@@ -196,7 +196,7 @@
 
         /* Page Container */
         .page {
-            display: none;
+            display: none !important;
             min-height: 100vh;
             padding-top: 80px;
             position: relative;
@@ -204,7 +204,7 @@
         }
 
         .page.active {
-            display: block;
+            display: block !important;
             animation: fadeIn 0.5s ease;
         }
 
@@ -2149,70 +2149,138 @@
             console.log('🖼️ Loading gallery...');
             
             const stored = localStorage.getItem('techfest_photos');
-            console.log('📦 LocalStorage data:', stored ? `${stored.substring(0, 100)}...` : 'null');
-            
             capturedPhotos = stored ? JSON.parse(stored) : [];
             console.log('📸 Total photos found:', capturedPhotos.length);
 
             const grid = document.getElementById('galleryGrid');
             const empty = document.getElementById('galleryEmpty');
-            
-            console.log('🎯 Grid element:', grid ? 'found' : 'NOT FOUND');
-            console.log('🎯 Empty element:', empty ? 'found' : 'NOT FOUND');
+
+            if (!grid || !empty) {
+                console.error('❌ Gallery elements not found!');
+                return;
+            }
 
             if (capturedPhotos.length === 0) {
                 console.log('⚠️ No photos - showing empty state');
-                if (grid) grid.style.display = 'none';
-                if (empty) empty.style.display = 'flex';
-            } else {
-                console.log('✅ Displaying', capturedPhotos.length, 'photos');
-                if (grid) {
-                    grid.style.display = 'grid';
-                    grid.innerHTML = '';
-                }
-                if (empty) empty.style.display = 'none';
-
-                // Display photos in reverse chronological order (newest first)
-                capturedPhotos.slice().reverse().forEach((photo, index) => {
-                    console.log(`  📷 Adding photo ${index + 1}:`, photo.id, 'data length:', photo.data ? photo.data.length : 0);
-                    
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item';
-                    item.style.cssText = 'position: relative; aspect-ratio: 9/16; min-height: 400px; background: rgba(20,20,20,0.8); border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,255,0,0.3);';
-                    
-                    const img = document.createElement('img');
-                    img.src = photo.data;
-                    img.alt = `TechFest Photo ${photo.id}`;
-                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; top: 0; left: 0; z-index: 1;';
-                    
-                    img.onerror = function() {
-                        console.error('❌ Failed to load image:', photo.id);
-                        this.style.background = 'rgba(255,0,0,0.2)';
-                    };
-                    
-                    img.onload = function() {
-                        console.log('✅ Image loaded successfully:', photo.id);
-                    };
-                    
-                    const overlay = document.createElement('div');
-                    overlay.className = 'gallery-overlay';
-                    overlay.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; opacity: 0; padding: 24px 20px; display: flex; gap: 12px; justify-content: center; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8) 50%, transparent);';
-                    overlay.innerHTML = `
-                        <button class="gallery-btn download-btn" onclick="downloadPhoto(${photo.id})" style="padding: 10px 20px; background: rgba(0,255,0,0.15); border: 1.5px solid #00ff00; border-radius: 10px; color: #00ff00; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button class="gallery-btn delete-btn" onclick="deletePhoto(${photo.id})" style="padding: 10px 20px; background: rgba(0,255,0,0.15); border: 1.5px solid #00ff00; border-radius: 10px; color: #00ff00; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    `;
-                    
-                    item.appendChild(img);
-                    item.appendChild(overlay);
-                    if (grid) grid.appendChild(item);
-                });
-                
-                console.log('✅ Gallery grid populated with', grid ? grid.children.length : 0, 'items');
+                grid.style.display = 'none';
+                empty.style.display = 'flex';
+                return;
             }
+
+            console.log('✅ Displaying', capturedPhotos.length, 'photos');
+            grid.style.display = 'grid !important';
+            grid.style.visibility = 'visible';
+            grid.innerHTML = '';
+            empty.style.display = 'none';
+
+            // FORCE GRID TO BE VISIBLE
+            setTimeout(() => {
+                grid.style.opacity = '1';
+                grid.style.display = 'grid';
+            }, 100);
+
+            // Display photos in reverse chronological order (newest first)
+            capturedPhotos.slice().reverse().forEach((photo, index) => {
+                console.log(`📷 Photo ${index + 1}: ID ${photo.id}`);
+                
+                const item = document.createElement('div');
+                item.className = 'gallery-photo-item';
+                item.style.cssText = `
+                    position: relative !important;
+                    width: 100% !important;
+                    aspect-ratio: 9/16 !important;
+                    min-height: 500px !important;
+                    background: #ff0000 !important;
+                    border-radius: 20px !important;
+                    overflow: hidden !important;
+                    border: 5px solid #00ff00 !important;
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                `;
+                
+                const img = document.createElement('img');
+                img.src = photo.data;
+                img.style.cssText = `
+                    width: 100% !important;
+                    height: 100% !important;
+                    object-fit: cover !important;
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                `;
+                
+                img.onload = () => console.log('✅ Image loaded:', photo.id);
+                img.onerror = () => console.error('❌ Image load failed:', photo.id);
+                
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    padding: 20px;
+                    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+                    display: flex;
+                    gap: 10px;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                `;
+                
+                item.onmouseenter = () => overlay.style.opacity = '1';
+                item.onmouseleave = () => overlay.style.opacity = '0';
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
+                downloadBtn.style.cssText = `
+                    padding: 10px 20px;
+                    background: rgba(0,255,0,0.2);
+                    border: 2px solid #00ff00;
+                    border-radius: 10px;
+                    color: #00ff00;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                `;
+                downloadBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = photo.data;
+                    a.download = `TechFest-${photo.id}.jpg`;
+                    a.click();
+                };
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                deleteBtn.style.cssText = `
+                    padding: 10px 20px;
+                    background: rgba(255,0,0,0.2);
+                    border: 2px solid #ff0000;
+                    border-radius: 10px;
+                    color: #ff0000;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                `;
+                deleteBtn.onclick = () => {
+                    if (confirm('Delete this photo?')) {
+                        capturedPhotos = capturedPhotos.filter(p => p.id !== photo.id);
+                        localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
+                        loadGallery();
+                    }
+                };
+                
+                overlay.appendChild(downloadBtn);
+                overlay.appendChild(deleteBtn);
+                item.appendChild(img);
+                item.appendChild(overlay);
+                grid.appendChild(item);
+            });
+            
+            console.log('✅ Gallery populated with', grid.children.length, 'items');
         }
 
         window.downloadPhoto = function(id) {
@@ -2220,7 +2288,7 @@
             if (photo) {
                 const a = document.createElement('a');
                 a.href = photo.data;
-                a.download = `TechFest-2025-${new Date().toISOString().slice(0, 10)}-${id}.jpg`;
+                a.download = `TechFest-2025-${id}.jpg`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
