@@ -13,8 +13,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     <!-- Background Music -->
     <audio id="bgMusic" loop preload="auto">
-        <source src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/audio/2023/03/14/audio_128b7b2e7b.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/audio/2023/03/14/audio_128b7b2e7b.ogg" type="audio/ogg">
     </audio>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Roboto+Condensed:wght@400;600;700&display=swap');
@@ -1279,11 +1279,11 @@
         /* Footer */
         footer {
             text-align: center;
-            padding: 30px 20px 25px;
+            padding: 4px 0 2px;
             color: var(--text-secondary);
             font-size: 13px;
             border-top: 1px solid var(--border);
-            margin-top: 60px;
+            margin-top: 8px;
             background: rgba(0,0,0,0.3);
         }
 
@@ -1291,16 +1291,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            max-width: 600px;
-            margin: 0 auto;
+            gap: 0;
+            max-width: none;
+            margin: 0;
         }
 
         .footer-logo {
             height: 80px;
             opacity: 0.95;
             transition: opacity 0.3s;
-            margin-bottom: 5px;
+            margin-bottom: 0;
         }
 
         .footer-logo:hover {
@@ -1310,7 +1310,7 @@
         .footer-text {
             color: rgba(255,255,255,0.7);
             font-size: 13px;
-            line-height: 1.5;
+            line-height: 1;
             text-align: center;
         }
 
@@ -1338,37 +1338,126 @@
             .brand-title { font-size: 12px; letter-spacing: 0.3px; }
             .brand-subtitle { font-size: 8px; letter-spacing: 0.8px; }
             .nav-menu { gap: 4px; }
-            .nav-link { padding: 6px 10px; font-size: 10px; font-weight: 600; }
-            .hero { padding: 80px 15px 60px; }
-            .camera-page, .gallery-page { padding: 90px 15px 70px; }
-            .camera-header { padding-bottom: 20px; }
-            .section-title { font-size: 28px; }
-            .section-subtitle { font-size: 14px; }
-            
+            .nav-link { padding: 6px 8px; font-size: 10px; font-weight: 600; }
+            .hero { padding: 60px 6vw 40px; }
+            .camera-page, .gallery-page { padding: 70px 6vw 50px; }
+            .camera-header { padding-bottom: 14px; }
+            .section-title { font-size: 22px; }
+            .section-subtitle { font-size: 12px; }
+            .cta-button, .register-button, .gallery-btn, .music-control, .control-btn, #captureBtn {
+                font-size: 14px !important;
+                padding: 12px 18px !important;
+                min-width: 44px;
+                min-height: 44px;
+                border-radius: 24px !important;
+            }
+            .cta-button i, .register-button i, .gallery-btn i, .music-control i, .control-btn i {
+                font-size: 16px !important;
+            }
+            .camera-controls {
+                gap: 10px !important;
+            }
+            #captureBtn {
+                width: 54px !important;
+                height: 54px !important;
+                font-size: 18px !important;
+            }
+            .control-btn {
+                width: 44px !important;
+                height: 44px !important;
+                font-size: 16px !important;
+            }
+            .register-button {
+                padding: 12px 18px !important;
+                font-size: 14px !important;
+            }
+            .gallery-btn {
+                padding: 10px 14px !important;
+                font-size: 13px !important;
+            }
             /* Photo Frame Logos Mobile Optimization */
-            .frame-top-logos { padding: 12px 15px !important; }
-            .frame-logo-top { height: 40px !important; max-height: 40px; }
-            .frame-bottom-logos { padding: 20px 15px !important; }
-            .frame-logo-center { height: 55px !important; max-height: 55px; }
-            .powered-by-section { gap: 8px !important; margin-top: 10px !important; }
-            .powered-by-text { font-size: 13px !important; }
-            .frame-logo-ceylon { height: 32px !important; max-height: 32px; }
+            .frame-top-logos { padding: 8px 6vw !important; }
+            .frame-logo-top { height: 28px !important; max-height: 28px; }
+            .frame-bottom-logos { padding: 12px 6vw !important; }
+            .frame-logo-center { height: 36px !important; max-height: 36px; }
+            .powered-by-section { gap: 6px !important; margin-top: 6px !important; }
+            .powered-by-text { font-size: 11px !important; }
+            .frame-logo-ceylon { height: 20px !important; max-height: 20px; }
+            .countdown-section, .event-info, .partners-section {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            .countdown-grid, .event-info, .partners-grid {
+                gap: 10px !important;
+            }
+            .info-card, .partner-card {
+                padding: 16px 8px !important;
+            }
+            .footer-content {
+                padding: 0 8px !important;
+            }
+            .footer-logo {
+                height: 40px !important;
+            }
         }
 
         @media (max-width: 360px) {
-            nav { padding: 0 8px; height: 55px; }
-            .brand-icon { width: 28px; height: 28px; font-size: 14px; }
-            .brand-title { font-size: 11px; }
-            .brand-subtitle { font-size: 7px; }
-            .nav-link { padding: 5px 8px; font-size: 9px; }
-            
+            nav { padding: 0 4px; height: 48px; }
+            .brand-icon { width: 20px; height: 20px; font-size: 10px; }
+            .brand-title { font-size: 9px; }
+            .brand-subtitle { font-size: 6px; }
+            .nav-link { padding: 4px 4px; font-size: 8px; }
+            .cta-button, .register-button, .gallery-btn, .music-control, .control-btn, #captureBtn {
+                font-size: 12px !important;
+                padding: 8px 10px !important;
+                min-width: 36px;
+                min-height: 36px;
+                border-radius: 16px !important;
+            }
+            .camera-controls {
+                gap: 6px !important;
+            }
+            #captureBtn {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 12px !important;
+            }
+            .control-btn {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 12px !important;
+            }
+            .register-button {
+                padding: 8px 10px !important;
+                font-size: 12px !important;
+            }
+            .gallery-btn {
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+            }
             /* Extra small screens - further optimize logos */
-            .frame-top-logos { padding: 10px 10px !important; }
-            .frame-logo-top { height: 32px !important; max-height: 32px; }
-            .frame-bottom-logos { padding: 15px 10px !important; }
-            .frame-logo-center { height: 45px !important; max-height: 45px; }
-            .powered-by-text { font-size: 11px !important; }
-            .frame-logo-ceylon { height: 26px !important; max-height: 26px; }
+            .frame-top-logos { padding: 4px 4px !important; }
+            .frame-logo-top { height: 18px !important; max-height: 18px; }
+            .frame-bottom-logos { padding: 6px 4px !important; }
+            .frame-logo-center { height: 22px !important; max-height: 22px; }
+            .powered-by-text { font-size: 9px !important; }
+            .frame-logo-ceylon { height: 12px !important; max-height: 12px; }
+            .countdown-section, .event-info, .partners-section {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            .countdown-grid, .event-info, .partners-grid {
+                gap: 4px !important;
+            }
+            .info-card, .partner-card {
+                padding: 8px 2px !important;
+            }
+            .footer-content {
+                padding: 0 2px !important;
+            }
+            .footer-logo {
+                height: 20px !important;
+            }
         }
     </style>
 </head>
@@ -1484,11 +1573,80 @@
 
         <footer>
             <div class="footer-content">
-                <img src="assets/logos/2.png" alt="Ceylon Labs" class="footer-logo">
-                <div class="footer-text">
-                    <span class="footer-highlight">Official AR Camera Platform</span><br>
-                    IEEE TechFest Sri Lanka 2025
+                <div class="footer-simple">
+                    <div class="footer-simple-title">Official AR Camera Platform</div>
+                    <img src="assets/logos/2.png" alt="Ceylon Labs" class="footer-logo-simple">
+                    <div class="footer-simple-event">Ceylon Labs<br>IEEE TechFest Sri Lanka 2025</div>
                 </div>
+                            .footer-simple {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                padding: 12px 0 0 0;
+                            }
+                            .footer-simple-title {
+                                color: #00ff44;
+                                font-size: 1.05rem;
+                                font-weight: 600;
+                                margin-bottom: 6px;
+                                font-family: 'Inter', 'Roboto Condensed', Arial, sans-serif;
+                                text-align: center;
+                            }
+                            .footer-logo-simple {
+                                display: block;
+                                height: 44px;
+                                margin: 0 0 6px 0;
+                                opacity: 0.98;
+                            }
+                            .footer-simple-event {
+                                color: #e0e0e0;
+                                font-size: 1.01rem;
+                                font-weight: 400;
+                                font-family: 'Inter', 'Roboto Condensed', Arial, sans-serif;
+                                text-align: center;
+                            }
+                    .footer-pro {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 0.2em;
+                    }
+                    .footer-pro-title {
+                        color: #00ff44;
+                        font-size: 1.08rem;
+                        font-weight: 600;
+                        letter-spacing: 0.01em;
+                        margin-bottom: 2px;
+                        font-family: 'Inter', 'Roboto Condensed', Arial, sans-serif;
+                        text-align: center;
+                    }
+                    .footer-logo-pro {
+                        display: block;
+                        height: 48px;
+                        margin: 8px auto 6px auto;
+                        opacity: 0.98;
+                        transition: opacity 0.3s;
+                    }
+                    .footer-pro-brand {
+                        color: #fff;
+                        font-family: 'Roboto Condensed', 'Inter', Arial, sans-serif;
+                        font-size: 1.5rem;
+                        font-weight: 900;
+                        letter-spacing: 0.04em;
+                        margin: 0 0 2px 0;
+                        text-align: center;
+                        text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+                    }
+                    .footer-pro-event {
+                        color: #d0d0d0;
+                        font-size: 1.01rem;
+                        font-weight: 400;
+                        margin-top: 2px;
+                        font-family: 'Inter', 'Roboto Condensed', Arial, sans-serif;
+                        text-align: center;
+                    }
             </div>
         </footer>
     </div>
