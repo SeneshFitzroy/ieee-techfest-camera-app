@@ -1916,6 +1916,15 @@
         document.addEventListener('touchstart', startMusicOnInteraction, { once: true });
         document.addEventListener('keydown', startMusicOnInteraction, { once: true });
 
+        // Hook up the visible play prompt
+        const musicPlayPrompt = document.getElementById('musicPlayPrompt');
+        if (musicPlayPrompt) {
+            musicPlayPrompt.addEventListener('click', () => {
+                initMusic();
+                musicPlayPrompt.style.display = 'none';
+            });
+        }
+
         // Add visual feedback when music state changes
         bgMusic.addEventListener('playing', () => {
             console.log('▶️ Music is now playing');
