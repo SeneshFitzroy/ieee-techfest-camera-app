@@ -839,30 +839,38 @@
         /* GALLERY */
         .gallery-page {
             padding: 120px 5% 100px;
+            min-height: 100vh;
+            background: transparent;
+            position: relative;
+            z-index: 1;
         }
 
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
             max-width: 1400px;
-            margin: 0 auto;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
         }
 
         .gallery-item {
             position: relative;
             aspect-ratio: 9 / 16;
-            border-radius: 24px;
+            border-radius: 20px;
             overflow: hidden;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            transition: all 0.4s ease;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            min-height: 400px;
         }
 
         .gallery-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0, 255, 0, 0.3);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 255, 0, 0.25);
             border-color: var(--primary-green);
         }
 
@@ -870,6 +878,11 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
 
         .gallery-overlay {
@@ -877,12 +890,14 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            padding: 24px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 50%, transparent 100%);
+            padding: 24px 20px;
             opacity: 0;
             transition: opacity 0.3s ease;
             display: flex;
             gap: 12px;
+            justify-content: center;
+            z-index: 10;
         }
 
         .gallery-item:hover .gallery-overlay {
@@ -890,25 +905,38 @@
         }
 
         .gallery-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(0, 255, 0, 0.2);
-            border: 1px solid var(--primary-green);
-            border-radius: 12px;
+            padding: 10px 20px;
+            background: rgba(0, 255, 0, 0.15);
+            border: 1.5px solid var(--primary-green);
+            border-radius: 10px;
             color: var(--primary-green);
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .gallery-btn:hover {
             background: rgba(0, 255, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        .gallery-btn i {
+            font-size: 16px;
         }
 
         .gallery-empty {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             padding: 120px 20px;
+            min-height: 50vh;
         }
 
         .empty-icon {
@@ -918,9 +946,10 @@
         }
 
         .empty-text {
-            font-size: 20px;
+            font-size: 22px;
             color: var(--text-secondary);
             margin-bottom: 40px;
+            font-weight: 500;
         }
 
         /* Flash Effect */
@@ -1312,20 +1341,20 @@
     <div id="galleryPage" class="page">
         <div class="gallery-page">
             <div class="camera-header">
-                <h2 class="section-title">Your Gallery</h2>
-                <p class="section-subtitle">All your TechFest memories in one place</p>
+                <h2 class="section-title">Photo Gallery</h2>
+                <p class="section-subtitle">Your TechFest captured moments</p>
             </div>
 
-            <div id="galleryGrid" class="gallery-grid"></div>
+            <div id="galleryGrid" class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; max-width: 1400px; margin: 0 auto 60px; padding: 20px;"></div>
 
-            <div id="galleryEmpty" class="gallery-empty">
+            <div id="galleryEmpty" class="gallery-empty" style="display: none;">
                 <div class="empty-icon">
-                    <i class="fas fa-camera-retro"></i>
+                    <i class="fas fa-images"></i>
                 </div>
-                <div class="empty-text">No photos captured yet</div>
+                <div class="empty-text">No photos yet</div>
                 <button class="cta-button" onclick="navigateToPage('camera')">
                     <i class="fas fa-camera cta-icon"></i>
-                    Take Your First Photo
+                    Capture Your First Photo
                 </button>
             </div>
 
@@ -1333,9 +1362,13 @@
                 <div class="footer-content">
                     <img src="assets/logos/2.png" alt="Ceylon Labs" class="footer-logo">
                     <div class="footer-text">
-                        Photos stored locally • Clear browser data to remove
+                        <span class="footer-highlight">Official AR Camera Platform</span><br>
+                        IEEE TechFest Sri Lanka 2025
                     </div>
                 </div>
+            </footer>
+        </div>
+    </div>
             </footer>
         </div>
     </div>
@@ -1453,7 +1486,10 @@
                 }
                 if (!faceDetectionReady) loadFaceDetection();
             }
-            else if (pageName === 'gallery') loadGallery();
+            else if (pageName === 'gallery') {
+                console.log('🎯 Navigating to gallery page');
+                loadGallery();
+            }
             else stopCamera();
 
             window.scrollTo(0, 0);
@@ -2000,14 +2036,14 @@
             flash.classList.add('active');
             setTimeout(() => flash.classList.remove('active'), 500);
 
-            // Create a temporary canvas for adding logos
+            // Create a temporary canvas for capturing from video
             const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
             const tempCtx = tempCanvas.getContext('2d');
             
-            // Draw the main canvas content
-            tempCtx.drawImage(canvas, 0, 0);
+            // Draw the video frame
+            tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
             
             // Add professional branding overlay
             // Top Bar with Logos
@@ -2049,19 +2085,13 @@
                 const techverseImg = await loadImage('assets/logos/techverse.png');
                 tempCtx.drawImage(techverseImg, tempCanvas.width - 220, 30, 180, 80);
                 
-                // TechFest Logo (bottom center)
+                // TechFest Logo (bottom left)
                 const techfestImg = await loadImage('assets/logos/techfest.png');
-                tempCtx.drawImage(techfestImg, (tempCanvas.width - 240) / 2, bottomY + 30, 240, 90);
+                tempCtx.drawImage(techfestImg, 80, bottomY + 40, 220, 85);
                 
-                // Ceylon Labs Logo (bottom)
-                const ceylonImg = await loadImage('assets/logos/ceylon-labs.png');
-                tempCtx.drawImage(ceylonImg, (tempCanvas.width - 180) / 2, bottomY + 130, 180, 55);
-                
-                // Add text
-                tempCtx.fillStyle = 'rgba(255,255,255,0.7)';
-                tempCtx.font = '32px Inter, sans-serif';
-                tempCtx.textAlign = 'center';
-                tempCtx.fillText('Powered by', tempCanvas.width / 2, bottomY + 125);
+                // Ceylon Labs Logo (bottom right)
+                const ceylonImg = await loadImage('assets/logos/2.png');
+                tempCtx.drawImage(ceylonImg, tempCanvas.width - 300, bottomY + 40, 220, 85);
                 
             } catch (error) {
                 console.error('Logo loading error:', error);
@@ -2085,7 +2115,12 @@
                     };
                     capturedPhotos.push(photoData);
                     localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
-                    alert('✓ Photo captured with IEEE TechFest branding!');
+                    console.log('✅ Photo saved! Total photos:', capturedPhotos.length);
+                    
+                    // Auto-redirect to gallery
+                    setTimeout(() => {
+                        navigateToPage('gallery');
+                    }, 500);
                 };
                 reader.readAsDataURL(blob);
             }, 'image/jpeg', 0.95);
@@ -2109,38 +2144,74 @@
             setTimeout(() => initCamera(), 500);
         });
 
-        // Gallery
+        // Gallery - Load photos from localStorage and display
         function loadGallery() {
+            console.log('🖼️ Loading gallery...');
+            
             const stored = localStorage.getItem('techfest_photos');
+            console.log('📦 LocalStorage data:', stored ? `${stored.substring(0, 100)}...` : 'null');
+            
             capturedPhotos = stored ? JSON.parse(stored) : [];
+            console.log('📸 Total photos found:', capturedPhotos.length);
 
             const grid = document.getElementById('galleryGrid');
             const empty = document.getElementById('galleryEmpty');
+            
+            console.log('🎯 Grid element:', grid ? 'found' : 'NOT FOUND');
+            console.log('🎯 Empty element:', empty ? 'found' : 'NOT FOUND');
 
             if (capturedPhotos.length === 0) {
-                grid.style.display = 'none';
-                empty.style.display = 'block';
+                console.log('⚠️ No photos - showing empty state');
+                if (grid) grid.style.display = 'none';
+                if (empty) empty.style.display = 'flex';
             } else {
-                grid.style.display = 'grid';
-                empty.style.display = 'none';
-                grid.innerHTML = '';
+                console.log('✅ Displaying', capturedPhotos.length, 'photos');
+                if (grid) {
+                    grid.style.display = 'grid';
+                    grid.innerHTML = '';
+                }
+                if (empty) empty.style.display = 'none';
 
-                capturedPhotos.slice().reverse().forEach(photo => {
+                // Display photos in reverse chronological order (newest first)
+                capturedPhotos.slice().reverse().forEach((photo, index) => {
+                    console.log(`  📷 Adding photo ${index + 1}:`, photo.id, 'data length:', photo.data ? photo.data.length : 0);
+                    
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
-                    item.innerHTML = `
-                        <img src="${photo.data}" alt="TechFest Photo">
-                        <div class="gallery-overlay">
-                            <button class="gallery-btn" onclick="downloadPhoto(${photo.id})">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                            <button class="gallery-btn" onclick="deletePhoto(${photo.id})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </div>
+                    item.style.cssText = 'position: relative; aspect-ratio: 9/16; min-height: 400px; background: rgba(20,20,20,0.8); border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,255,0,0.3);';
+                    
+                    const img = document.createElement('img');
+                    img.src = photo.data;
+                    img.alt = `TechFest Photo ${photo.id}`;
+                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; top: 0; left: 0; z-index: 1;';
+                    
+                    img.onerror = function() {
+                        console.error('❌ Failed to load image:', photo.id);
+                        this.style.background = 'rgba(255,0,0,0.2)';
+                    };
+                    
+                    img.onload = function() {
+                        console.log('✅ Image loaded successfully:', photo.id);
+                    };
+                    
+                    const overlay = document.createElement('div');
+                    overlay.className = 'gallery-overlay';
+                    overlay.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; opacity: 0; padding: 24px 20px; display: flex; gap: 12px; justify-content: center; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8) 50%, transparent);';
+                    overlay.innerHTML = `
+                        <button class="gallery-btn download-btn" onclick="downloadPhoto(${photo.id})" style="padding: 10px 20px; background: rgba(0,255,0,0.15); border: 1.5px solid #00ff00; border-radius: 10px; color: #00ff00; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="gallery-btn delete-btn" onclick="deletePhoto(${photo.id})" style="padding: 10px 20px; background: rgba(0,255,0,0.15); border: 1.5px solid #00ff00; border-radius: 10px; color: #00ff00; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     `;
-                    grid.appendChild(item);
+                    
+                    item.appendChild(img);
+                    item.appendChild(overlay);
+                    if (grid) grid.appendChild(item);
                 });
+                
+                console.log('✅ Gallery grid populated with', grid ? grid.children.length : 0, 'items');
             }
         }
 
@@ -2149,13 +2220,15 @@
             if (photo) {
                 const a = document.createElement('a');
                 a.href = photo.data;
-                a.download = `TechFest-2025-${id}.jpg`;
+                a.download = `TechFest-2025-${new Date().toISOString().slice(0, 10)}-${id}.jpg`;
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
             }
         };
 
         window.deletePhoto = function(id) {
-            if (confirm('Delete this photo?')) {
+            if (confirm('Delete this photo permanently?')) {
                 capturedPhotos = capturedPhotos.filter(p => p.id !== id);
                 localStorage.setItem('techfest_photos', JSON.stringify(capturedPhotos));
                 loadGallery();
