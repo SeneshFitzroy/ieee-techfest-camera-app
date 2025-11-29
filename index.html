@@ -213,6 +213,31 @@
         }
         .music-play-prompt i { color: #00ff44; }
 
+        /* Small audio diagnostic panel */
+        .audio-debug {
+            position: fixed;
+            left: 18px;
+            bottom: 18px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 10px 12px;
+            border-radius: 8px;
+            z-index: 2000;
+            font-size: 13px;
+            border: 1px solid rgba(0,255,0,0.08);
+            max-width: 320px;
+        }
+        .audio-debug button {
+            margin-top: 8px;
+            background: #00ff44;
+            color: #000;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         .nav-link {
             padding: 12px 24px;
             border-radius: 50px;
@@ -1516,6 +1541,13 @@
         <span style="font-weight:700;">Play Music</span>
     </div>
 
+    <!-- Audio diagnostic panel -->
+    <div id="audioDebug" class="audio-debug" aria-live="polite">
+        <div><strong>Audio status:</strong> <span id="audioStatus">idle</span></div>
+        <div id="audioError" style="color:#ffbbbb; margin-top:6px; display:none;"></div>
+        <button id="audioTestBtn">Test Sound</button>
+    </div>
+
     <!-- Flash Effect -->
     <div id="flashEffect"></div>
 
@@ -1925,18 +1957,42 @@
             });
         }
 
-        // Add visual feedback when music state changes
+        // Add visual feedback when music state changes and update debug panel
         bgMusic.addEventListener('playing', () => {
             console.log('▶️ Music is now playing');
+            const status = document.getElementById('audioStatus'); if (status) status.textContent = 'playing';
+            const err = document.getElementById('audioError'); if (err) { err.style.display = 'none'; err.textContent = ''; }
         });
         
         bgMusic.addEventListener('pause', () => {
             console.log('⏸️ Music is paused');
+            const status = document.getElementById('audioStatus'); if (status) status.textContent = 'paused';
         });
         
         bgMusic.addEventListener('error', (e) => {
             console.error('❌ Audio error:', e);
+            const status = document.getElementById('audioStatus'); if (status) status.textContent = 'error';
+            const err = document.getElementById('audioError'); if (err) { err.style.display = 'block'; err.textContent = (e && e.message) ? e.message : JSON.stringify(e); }
         });
+
+        // Hook up the audio test button in debug panel
+        const audioTestBtn = document.getElementById('audioTestBtn');
+        if (audioTestBtn) {
+            audioTestBtn.addEventListener('click', () => {
+                const status = document.getElementById('audioStatus'); if (status) status.textContent = 'testing...';
+                const err = document.getElementById('audioError'); if (err) { err.style.display = 'none'; err.textContent = ''; }
+                bgMusic.muted = false;
+                bgMusic.volume = 0.9;
+                bgMusic.play().then(() => {
+                    if (status) status.textContent = 'playing (test)';
+                    setTimeout(() => { try { bgMusic.pause(); if (status) status.textContent = 'paused'; } catch (e) {} }, 1200);
+                }).catch(err => {
+                    console.error('Test play failed', err);
+                    if (status) status.textContent = 'error';
+                    const eDiv = document.getElementById('audioError'); if (eDiv) { eDiv.style.display = 'block'; eDiv.textContent = (err && err.message) ? err.message : JSON.stringify(err); }
+                });
+            });
+        }
 
         // GSAP Scroll Animations
         gsap.registerPlugin(ScrollTrigger);
