@@ -1783,7 +1783,80 @@
                         .snap-filter-card.active .snap-filter-name {
                             color: #00ff00;
                         }
+                        
+                        /* AR FILTER BUTTONS - POSITIONED AT BOTTOM */
+                        .ar-filters-bar {
+                            position: absolute;
+                            bottom: 120px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            display: flex;
+                            gap: 15px;
+                            padding: 15px 25px;
+                            background: rgba(0,0,0,0.85);
+                            backdrop-filter: blur(15px);
+                            border-radius: 50px;
+                            border: 2px solid rgba(0,255,0,0.5);
+                            z-index: 150;
+                            pointer-events: auto;
+                        }
+                        .ar-filter-btn {
+                            width: 60px;
+                            height: 60px;
+                            border-radius: 50%;
+                            border: 2px solid rgba(0,255,0,0.4);
+                            background: rgba(20,20,20,0.8);
+                            color: #00ff00;
+                            font-size: 26px;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .ar-filter-btn:hover {
+                            border-color: #00ff00;
+                            background: rgba(0,255,0,0.15);
+                            transform: scale(1.1);
+                            box-shadow: 0 0 20px rgba(0,255,0,0.4);
+                        }
+                        .ar-filter-btn.active {
+                            border: 3px solid #00ff00;
+                            background: rgba(0,255,0,0.2);
+                            box-shadow: 0 0 30px rgba(0,255,0,0.6), inset 0 0 15px rgba(0,255,0,0.3);
+                        }
+                        @media (max-width: 768px) {
+                            .ar-filters-bar {
+                                bottom: 100px;
+                                gap: 10px;
+                                padding: 10px 15px;
+                            }
+                            .ar-filter-btn {
+                                width: 50px;
+                                height: 50px;
+                                font-size: 22px;
+                            }
+                        }
                     </style>
+
+                <!-- AR FILTER SELECTION BAR -->
+                <div class="ar-filters-bar">
+                    <button class="ar-filter-btn active" data-ar-filter="none" title="No Filter">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                    <button class="ar-filter-btn" data-ar-filter="sunglasses" title="Sunglasses">
+                        <i class="fas fa-glasses"></i>
+                    </button>
+                    <button class="ar-filter-btn" data-ar-filter="crown" title="Crown">
+                        <i class="fas fa-crown"></i>
+                    </button>
+                    <button class="ar-filter-btn" data-ar-filter="glitter" title="Sparkles">
+                        <i class="fas fa-sparkles"></i>
+                    </button>
+                    <button class="ar-filter-btn" data-ar-filter="mask" title="Tech Mask">
+                        <i class="fas fa-mask"></i>
+                    </button>
+                </div>
 
                 <div class="camera-controls">
                     <button class="control-btn" id="switchBtn" title="Switch Camera">
@@ -1798,7 +1871,8 @@
         </div>
     </div>
 
-    <!-- GALLERY PAGE - REMOVED, AUTO DOWNLOAD INSTEAD -->
+    <!-- GALLERY PAGE - 
+     REMOVED, AUTO DOWNLOAD INSTEAD -->
     <div id="galleryPage" class="page">
         <div style="padding: 100px 20px 50px 20px; min-height: 100vh; background: #0a0a0a; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
             <i class="fas fa-check-circle" style="font-size: 80px; color: #00ff00; margin-bottom: 30px;"></i>
@@ -2037,6 +2111,9 @@
         let cameraInitialized = false;
         let isPortrait = false;
         
+        // AR FILTER SYSTEM - Professional AR Overlays
+        let currentARFilter = 'none'; // none, sunglasses, mask, glitter, crown
+        
         // Load existing photos from localStorage (with error handling)
         try {
             const stored = localStorage.getItem('techfest_photos');
@@ -2053,71 +2130,155 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true, willReadFrequently: true });
 
-        // Initialize Face Detection
+        // Initialize Face Detection with AGGRESSIVE loading
+        let modelLoadAttempts = 0;
         async function loadFaceDetection() {
             try {
+                modelLoadAttempts++;
+                console.log(`🔄 Face API load attempt ${modelLoadAttempts}...`);
+                
                 // Check if faceapi library is loaded
                 if (typeof faceapi === 'undefined') {
-                    console.warn('Face API library not loaded yet, retrying...');
-                    setTimeout(loadFaceDetection, 1000);
+                    if (modelLoadAttempts < 10) {
+                        console.warn('⏳ Face API library not loaded yet, retrying in 500ms...');
+                        setTimeout(loadFaceDetection, 500);
+                    } else {
+                        console.error('❌ Face API library failed to load after 10 attempts');
+                    }
                     return;
                 }
                 
-                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-                faceDetectionReady = true;
-                console.log('✓ Face detection ready');
+                console.log('✅ Face API library detected!');
+                
+                // Try multiple CDNs
+                const MODEL_URLS = [
+                    'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/',
+                    'https://justadudewhohacks.github.io/face-api.js/models/'
+                ];
+                
+                for (let i = 0; i < MODEL_URLS.length; i++) {
+                    try {
+                        console.log(`🌐 Trying model CDN ${i+1}: ${MODEL_URLS[i]}`);
+                        await Promise.all([
+                            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URLS[i]),
+                            faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URLS[i])
+                        ]);
+                        faceDetectionReady = true;
+                        console.log('✅✅✅ FACE DETECTION MODELS LOADED SUCCESSFULLY! ✅✅✅');
+                        console.log('👤 Face tracking is NOW ACTIVE!');
+                        
+                        // Show BIG on-screen notification
+                        const notification = document.createElement('div');
+                        notification.style.cssText = `
+                            position: fixed;
+                            top: 100px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: linear-gradient(135deg, #00ff00, #00cc00);
+                            color: #000;
+                            padding: 20px 40px;
+                            border-radius: 50px;
+                            font-size: 20px;
+                            font-weight: bold;
+                            z-index: 99999;
+                            box-shadow: 0 0 50px rgba(0,255,0,0.8);
+                        `;
+                        notification.innerHTML = '✅ AR FILTERS READY! Click a filter button above';
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            notification.style.transition = 'all 0.5s';
+                            notification.style.opacity = '0';
+                            notification.style.transform = 'translateX(-50%) translateY(-20px)';
+                            setTimeout(() => notification.remove(), 500);
+                        }, 3000);
+                        return;
+                    } catch (cdnError) {
+                        console.warn(`⚠️ CDN ${i+1} failed:`, cdnError.message);
+                        if (i === MODEL_URLS.length - 1) throw cdnError;
+                    }
+                }
             } catch (error) {
-                console.error('Face detection initialization failed:', error);
+                console.error('❌❌❌ FACE DETECTION FAILED:', error);
                 faceDetectionReady = false;
             }
         }
 
-        // Detect faces periodically (not every frame to avoid flickering)
+        // Detect faces periodically (OPTIMIZED for smooth AR)
         let lastFaceDetectionTime = 0;
+        let faceDetectionRunning = false;
+        
         async function detectFaces() {
             const now = Date.now();
-            if (!faceDetectionReady || now - lastFaceDetectionTime < 200) return; // Detect every 200ms
+            // Run detection every 100ms (10 FPS) for smooth tracking
+            if (!faceDetectionReady || now - lastFaceDetectionTime < 100 || faceDetectionRunning) return;
             
             lastFaceDetectionTime = now;
+            faceDetectionRunning = true;
             
-            // Run detection in background without blocking render
-            (async () => {
-                try {
-                    const detections = await faceapi
-                        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
-                        .withFaceLandmarks(true);
+            try {
+                const detections = await faceapi
+                    .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ 
+                        inputSize: 256, 
+                        scoreThreshold: 0.4 
+                    }))
+                    .withFaceLandmarks(true);
+                
+                if (detections && detections.length > 0) {
+                    const d = detections[0]; // Use first face
+                    const scaleX = canvas.width / video.videoWidth;
+                    const scaleY = canvas.height / video.videoHeight;
                     
-                    if (detections && detections.length > 0) {
-                        // Scale detections to canvas size
-                        detectedFaces = detections.map(d => {
-                            const scaleX = canvas.width / video.videoWidth;
-                            const scaleY = canvas.height / video.videoHeight;
-                            
-                            return {
-                                box: {
-                                    x: d.detection.box.x * scaleX,
-                                    y: d.detection.box.y * scaleY,
-                                    width: d.detection.box.width * scaleX,
-                                    height: d.detection.box.height * scaleY
-                                },
-                                landmarks: {
-                                    leftEye: { x: d.landmarks.getLeftEye()[0].x * scaleX, y: d.landmarks.getLeftEye()[0].y * scaleY },
-                                    rightEye: { x: d.landmarks.getRightEye()[0].x * scaleX, y: d.landmarks.getRightEye()[0].y * scaleY },
-                                    nose: { x: d.landmarks.getNose()[0].x * scaleX, y: d.landmarks.getNose()[0].y * scaleY },
-                                    mouth: d.landmarks.getMouth().map(p => ({ x: p.x * scaleX, y: p.y * scaleY })),
-                                    jawline: d.landmarks.getJawOutline().map(p => ({ x: p.x * scaleX, y: p.y * scaleY }))
-                                }
-                            };
-                        });
-                    } else {
-                        detectedFaces = [];
+                    // Get accurate eye centers
+                    const leftEyePts = d.landmarks.getLeftEye();
+                    const rightEyePts = d.landmarks.getRightEye();
+                    const leftEyeCenter = {
+                        x: (leftEyePts.reduce((sum, p) => sum + p.x, 0) / leftEyePts.length) * scaleX,
+                        y: (leftEyePts.reduce((sum, p) => sum + p.y, 0) / leftEyePts.length) * scaleY
+                    };
+                    const rightEyeCenter = {
+                        x: (rightEyePts.reduce((sum, p) => sum + p.x, 0) / rightEyePts.length) * scaleX,
+                        y: (rightEyePts.reduce((sum, p) => sum + p.y, 0) / rightEyePts.length) * scaleY
+                    };
+                    
+                    // Get nose tip
+                    const nosePts = d.landmarks.getNose();
+                    const noseTip = {
+                        x: nosePts[nosePts.length - 1].x * scaleX,
+                        y: nosePts[nosePts.length - 1].y * scaleY
+                    };
+                    
+                    // Get mouth points
+                    const mouthPts = d.landmarks.getMouth();
+                    
+                    detectedFaces = [{
+                        box: {
+                            x: d.detection.box.x * scaleX,
+                            y: d.detection.box.y * scaleY,
+                            width: d.detection.box.width * scaleX,
+                            height: d.detection.box.height * scaleY
+                        },
+                        landmarks: {
+                            leftEye: leftEyeCenter,
+                            rightEye: rightEyeCenter,
+                            nose: noseTip,
+                            mouth: mouthPts.map(p => ({ x: p.x * scaleX, y: p.y * scaleY })),
+                            jawline: d.landmarks.getJawOutline().map(p => ({ x: p.x * scaleX, y: p.y * scaleY }))
+                        }
+                    }];
+                    
+                    // Log for debugging (only occasionally)
+                    if (Math.random() < 0.01) {
+                        console.log('👤 Face detected! AR Filter:', currentARFilter);
                     }
-                } catch (error) {
-                    console.error('Face detection error:', error);
+                } else {
+                    detectedFaces = [];
                 }
-            })();
+            } catch (error) {
+                console.error('Face detection error:', error);
+                detectedFaces = [];
+            } finally {
+                faceDetectionRunning = false;
+            }
         }
 
         // Navigation
@@ -2291,8 +2452,68 @@
                         console.log('📐 Canvas resized to:', canvas.width, 'x', canvas.height);
                     }
                     
-                    // ONLY draw video - NO FILTERS AT ALL
+                    // Draw video frame
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // RUN FACE DETECTION CONTINUOUSLY
+                    if (faceDetectionReady) {
+                        detectFaces();
+                    }
+                    
+                    // Apply AR filters in REAL-TIME if face detected
+                    if (detectedFaces.length > 0 && currentARFilter !== 'none') {
+                        drawARFilterRealtime(ctx, detectedFaces[0], canvas.width, canvas.height);
+                    }
+                    
+                    // DEBUG: Show AR filter status with BIG VISIBLE TEXT
+                    if (currentARFilter !== 'none' || !faceDetectionReady) {
+                        ctx.save();
+                        
+                        // Background for text
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                        ctx.fillRect(10, 10, canvas.width - 20, 120);
+                        
+                        // Status text
+                        ctx.font = 'bold 32px Arial';
+                        ctx.fillStyle = faceDetectionReady ? '#00ff00' : '#ff9900';
+                        ctx.fillText(`Face Detection: ${faceDetectionReady ? 'READY ✅' : 'LOADING... ⏳'}`, 20, 50);
+                        
+                        ctx.font = 'bold 28px Arial';
+                        ctx.fillStyle = currentARFilter !== 'none' ? '#00ff00' : '#888';
+                        ctx.fillText(`AR Filter: ${currentARFilter.toUpperCase()}`, 20, 85);
+                        
+                        ctx.fillStyle = detectedFaces.length > 0 ? '#00ff00' : '#ff0000';
+                        ctx.fillText(`Faces Detected: ${detectedFaces.length}`, 20, 115);
+                        
+                        // Draw face detection box
+                        if (detectedFaces.length > 0) {
+                            const face = detectedFaces[0];
+                            ctx.strokeStyle = '#00ff00';
+                            ctx.lineWidth = 4;
+                            ctx.strokeRect(face.box.x, face.box.y, face.box.width, face.box.height);
+                            
+                            // Draw landmarks BIGGER
+                            ctx.fillStyle = '#ff0000';
+                            ctx.beginPath();
+                            ctx.arc(face.landmarks.leftEye.x, face.landmarks.leftEye.y, 8, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.arc(face.landmarks.rightEye.x, face.landmarks.rightEye.y, 8, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.fillStyle = '#0000ff';
+                            ctx.beginPath();
+                            ctx.arc(face.landmarks.nose.x, face.landmarks.nose.y, 8, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (faceDetectionReady && currentARFilter !== 'none') {
+                            // Show instruction
+                            ctx.font = 'bold 40px Arial';
+                            ctx.fillStyle = '#ffff00';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('👤 POSITION YOUR FACE IN FRAME', canvas.width / 2, canvas.height / 2);
+                        }
+                        
+                        ctx.restore();
+                    }
                     
                     frameCount++;
                     if (frameCount === 1) {
@@ -2300,6 +2521,7 @@
                     }
                     if (frameCount === 30) {
                         console.log('✅ 30 FRAMES RENDERED - CAMERA IS WORKING!');
+                        console.log('🎭 AR Filter System: ACTIVE');
                     }
                 }
                 
@@ -2681,96 +2903,574 @@
             });
         });
 
-        // Capture Photo with Branding Overlay
+        // AR FILTER SELECTION - Professional Face Tracking Filters
+        document.querySelectorAll('.ar-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.ar-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentARFilter = btn.dataset.arFilter;
+                
+                console.log('🎭 AR FILTER ACTIVATED:', currentARFilter.toUpperCase());
+                console.log('👤 Face detection ready:', faceDetectionReady);
+                console.log('📹 Detected faces:', detectedFaces.length);
+                
+                // Show success toast
+                const filterNames = {
+                    none: 'No Filter',
+                    sunglasses: 'Sunglasses 😎',
+                    crown: 'Crown 👑',
+                    glitter: 'Sparkles ✨',
+                    mask: 'Tech Mask 🎭'
+                };
+                const filterName = filterNames[currentARFilter] || currentARFilter;
+                
+                // Create toast notification
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 250px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0,255,0,0.95);
+                    color: #000;
+                    padding: 15px 35px;
+                    border-radius: 30px;
+                    font-weight: bold;
+                    font-size: 18px;
+                    z-index: 9999;
+                    box-shadow: 0 0 40px rgba(0,255,0,0.8);
+                    animation: fadeIn 0.3s, fadeOut 0.3s 1.7s;
+                `;
+                toast.textContent = `${filterName}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            });
+        });
+
+        // REAL-TIME AR Filter Drawing (for live preview)
+        function drawARFilterRealtime(ctx, face, canvasWidth, canvasHeight) {
+            if (!face || !face.landmarks) return;
+            
+            const { box, landmarks } = face;
+            ctx.save();
+            
+            switch(currentARFilter) {
+                case 'sunglasses':
+                    // 3D Realistic Sunglasses
+                    const eyeDistance = Math.abs(landmarks.rightEye.x - landmarks.leftEye.x);
+                    const glassWidth = eyeDistance * 0.65;
+                    const glassHeight = eyeDistance * 0.35;
+                    const eyeMidY = (landmarks.leftEye.y + landmarks.rightEye.y) / 2;
+                    
+                    // Frame thickness
+                    const frameThick = Math.max(3, eyeDistance * 0.02);
+                    
+                    // Black frame
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = frameThick;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    
+                    // Dark tinted lenses with gradient
+                    const lensGrad = ctx.createRadialGradient(
+                        landmarks.leftEye.x, eyeMidY, 0,
+                        landmarks.leftEye.x, eyeMidY, glassWidth/2
+                    );
+                    lensGrad.addColorStop(0, 'rgba(20, 20, 20, 0.85)');
+                    lensGrad.addColorStop(1, 'rgba(0, 0, 0, 0.95)');
+                    
+                    // Left lens
+                    ctx.fillStyle = lensGrad;
+                    ctx.beginPath();
+                    ctx.arc(landmarks.leftEye.x, eyeMidY, glassWidth/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Right lens (mirror gradient)
+                    const lensGradR = ctx.createRadialGradient(
+                        landmarks.rightEye.x, eyeMidY, 0,
+                        landmarks.rightEye.x, eyeMidY, glassWidth/2
+                    );
+                    lensGradR.addColorStop(0, 'rgba(20, 20, 20, 0.85)');
+                    lensGradR.addColorStop(1, 'rgba(0, 0, 0, 0.95)');
+                    ctx.fillStyle = lensGradR;
+                    ctx.beginPath();
+                    ctx.arc(landmarks.rightEye.x, eyeMidY, glassWidth/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Bridge
+                    ctx.beginPath();
+                    ctx.moveTo(landmarks.leftEye.x + glassWidth/2, eyeMidY);
+                    ctx.lineTo(landmarks.rightEye.x - glassWidth/2, eyeMidY);
+                    ctx.stroke();
+                    
+                    // Realistic lens reflection (white shine)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                    ctx.beginPath();
+                    ctx.arc(landmarks.leftEye.x - glassWidth*0.2, eyeMidY - glassHeight*0.15, glassWidth*0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(landmarks.rightEye.x - glassWidth*0.2, eyeMidY - glassHeight*0.15, glassWidth*0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'crown':
+                    // 3D Golden Crown with depth
+                    const crownY = box.y - box.height * 0.25;
+                    const crownWidth = box.width * 1.1;
+                    const crownHeight = box.height * 0.35;
+                    const crownX = box.x + box.width / 2;
+                    
+                    // Shadow for depth
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+                    ctx.shadowOffsetY = 5;
+                    
+                    // Gold gradient with shine
+                    const crownGrad = ctx.createLinearGradient(
+                        crownX - crownWidth/2, crownY,
+                        crownX + crownWidth/2, crownY + crownHeight
+                    );
+                    crownGrad.addColorStop(0, '#FFE55C');
+                    crownGrad.addColorStop(0.3, '#FFD700');
+                    crownGrad.addColorStop(0.7, '#FFA500');
+                    crownGrad.addColorStop(1, '#CC8400');
+                    
+                    ctx.fillStyle = crownGrad;
+                    ctx.strokeStyle = '#B8860B';
+                    ctx.lineWidth = 3;
+                    
+                    // Crown base
+                    ctx.beginPath();
+                    ctx.moveTo(crownX - crownWidth/2, crownY + crownHeight);
+                    
+                    // 5 peaks with curves
+                    const peaks = 5;
+                    for (let i = 0; i <= peaks; i++) {
+                        const x = crownX - crownWidth/2 + (i * crownWidth / peaks);
+                        const peakY = i % 2 === 0 ? crownY : crownY + crownHeight * 0.4;
+                        ctx.lineTo(x, peakY);
+                    }
+                    
+                    ctx.lineTo(crownX + crownWidth/2, crownY + crownHeight);
+                    ctx.lineTo(crownX - crownWidth/2, crownY + crownHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Jewels on peaks (rubies)
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(255, 0, 0, 0.8)';
+                    for (let i = 0; i < peaks; i++) {
+                        if (i % 2 === 0) {
+                            const jewelX = crownX - crownWidth/2 + (i * crownWidth / peaks);
+                            const jewelSize = crownWidth * 0.035;
+                            
+                            // Ruby gradient
+                            const jewelGrad = ctx.createRadialGradient(
+                                jewelX, crownY + crownHeight * 0.15, 0,
+                                jewelX, crownY + crownHeight * 0.15, jewelSize
+                            );
+                            jewelGrad.addColorStop(0, '#FF6B6B');
+                            jewelGrad.addColorStop(0.5, '#DC143C');
+                            jewelGrad.addColorStop(1, '#8B0000');
+                            
+                            ctx.fillStyle = jewelGrad;
+                            ctx.beginPath();
+                            ctx.arc(jewelX, crownY + crownHeight * 0.15, jewelSize, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                    break;
+                    
+                case 'glitter':
+                    // Animated sparkles
+                    const time = Date.now() / 1000;
+                    const numSparkles = 25;
+                    
+                    for (let i = 0; i < numSparkles; i++) {
+                        const angle = (i / numSparkles) * Math.PI * 2 + time * 0.5;
+                        const distance = box.width * 0.55 + Math.sin(time * 3 + i) * (box.width * 0.1);
+                        const sparkleX = box.x + box.width / 2 + Math.cos(angle) * distance;
+                        const sparkleY = box.y + box.height / 2 + Math.sin(angle) * distance;
+                        const size = 6 + Math.sin(time * 4 + i) * 4;
+                        const alpha = 0.7 + Math.sin(time * 5 + i) * 0.3;
+                        
+                        const colors = ['#FFD700', '#00ff00', '#FF1493', '#00FFFF', '#FF6B6B'];
+                        const color = colors[i % colors.length];
+                        
+                        ctx.save();
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = color;
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = alpha;
+                        
+                        // Draw star
+                        ctx.translate(sparkleX, sparkleY);
+                        ctx.rotate(time * 2 + i);
+                        ctx.beginPath();
+                        for (let j = 0; j < 5; j++) {
+                            const starAngle = (j * 4 * Math.PI) / 5 - Math.PI / 2;
+                            const radius = j % 2 === 0 ? size : size * 0.4;
+                            const px = Math.cos(starAngle) * radius;
+                            const py = Math.sin(starAngle) * radius;
+                            if (j === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    break;
+                    
+                case 'mask':
+                    // Tech cyber mask with glow
+                    const maskWidth = box.width * 0.9;
+                    const maskHeight = box.height * 0.45;
+                    const maskY = landmarks.nose.y - maskHeight * 0.15;
+                    const maskX = box.x + box.width / 2;
+                    
+                    // Neon glow
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = '#00ff00';
+                    
+                    // Mask gradient
+                    const maskGrad = ctx.createRadialGradient(
+                        maskX, maskY, 0,
+                        maskX, maskY, maskWidth/2
+                    );
+                    maskGrad.addColorStop(0, 'rgba(0, 255, 0, 0.25)');
+                    maskGrad.addColorStop(0.7, 'rgba(0, 200, 0, 0.5)');
+                    maskGrad.addColorStop(1, 'rgba(0, 150, 0, 0.7)');
+                    
+                    ctx.fillStyle = maskGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(maskX, maskY, maskWidth/2, maskHeight/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tech grid pattern
+                    ctx.strokeStyle = 'rgba(0, 255, 0, 0.9)';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 6; i++) {
+                        ctx.beginPath();
+                        ctx.arc(maskX, maskY, (maskWidth/2) * (0.2 + i * 0.13), 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    
+                    // Horizontal lines
+                    for (let i = -2; i <= 2; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(maskX - maskWidth/2, maskY + i * maskHeight * 0.15);
+                        ctx.lineTo(maskX + maskWidth/2, maskY + i * maskHeight * 0.15);
+                        ctx.stroke();
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                    break;
+            }
+            
+            ctx.restore();
+        }
+        
+        // AR Filter Drawing Function for HIGH-RES Photo Capture
+        function drawARFilter(ctx, face, canvasWidth, canvasHeight) {
+            if (!face || !face.landmarks) return;
+            
+            const { box, landmarks } = face;
+            const scale = canvasWidth / video.videoWidth; // Scale factor for hi-res
+            
+            // Scale all measurements
+            const scaledBox = {
+                x: box.x * scale,
+                y: box.y * scale,
+                width: box.width * scale,
+                height: box.height * scale
+            };
+            
+            const scaledLandmarks = {
+                leftEye: { x: landmarks.leftEye.x * scale, y: landmarks.leftEye.y * scale },
+                rightEye: { x: landmarks.rightEye.x * scale, y: landmarks.rightEye.y * scale },
+                nose: { x: landmarks.nose.x * scale, y: landmarks.nose.y * scale },
+                mouth: landmarks.mouth.map(p => ({ x: p.x * scale, y: p.y * scale }))
+            };
+            
+            ctx.save();
+            
+            switch(currentARFilter) {
+                case 'sunglasses':
+                    // Professional sunglasses overlay
+                    const glassWidth = scaledBox.width * 0.48;
+                    const glassHeight = scaledBox.height * 0.16;
+                    const glassY = (scaledLandmarks.leftEye.y + scaledLandmarks.rightEye.y) / 2;
+                    
+                    // Lens gradient (dark tinted)
+                    const lensGrad = ctx.createLinearGradient(0, glassY - glassHeight/2, 0, glassY + glassHeight/2);
+                    lensGrad.addColorStop(0, 'rgba(30, 30, 30, 0.85)');
+                    lensGrad.addColorStop(0.5, 'rgba(10, 10, 10, 0.9)');
+                    lensGrad.addColorStop(1, 'rgba(20, 20, 20, 0.85)');
+                    
+                    // Frame color
+                    const frameColor = '#1a1a1a';
+                    ctx.lineWidth = Math.floor(6 * scale);
+                    ctx.strokeStyle = frameColor;
+                    
+                    // Left lens
+                    ctx.fillStyle = lensGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(scaledLandmarks.leftEye.x, glassY, glassWidth/2, glassHeight/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Right lens
+                    ctx.beginPath();
+                    ctx.ellipse(scaledLandmarks.rightEye.x, glassY, glassWidth/2, glassHeight/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Bridge
+                    ctx.beginPath();
+                    ctx.moveTo(scaledLandmarks.leftEye.x + glassWidth/2, glassY);
+                    ctx.lineTo(scaledLandmarks.rightEye.x - glassWidth/2, glassY);
+                    ctx.stroke();
+                    
+                    // Lens reflection (realistic)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                    ctx.beginPath();
+                    ctx.ellipse(scaledLandmarks.leftEye.x - glassWidth * 0.15, glassY - glassHeight * 0.15, 
+                                glassWidth * 0.2, glassHeight * 0.25, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(scaledLandmarks.rightEye.x - glassWidth * 0.15, glassY - glassHeight * 0.15, 
+                                glassWidth * 0.2, glassHeight * 0.25, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'crown':
+                    // Glowing crown above head
+                    const crownY = scaledBox.y - scaledBox.height * 0.15;
+                    const crownWidth = scaledBox.width * 0.9;
+                    const crownHeight = scaledBox.height * 0.3;
+                    const crownX = scaledBox.x + scaledBox.width / 2;
+                    
+                    // Crown glow
+                    ctx.shadowBlur = 20 * scale;
+                    ctx.shadowColor = '#FFD700';
+                    
+                    // Crown gradient
+                    const crownGrad = ctx.createLinearGradient(crownX - crownWidth/2, crownY, crownX + crownWidth/2, crownY + crownHeight);
+                    crownGrad.addColorStop(0, '#FFD700');
+                    crownGrad.addColorStop(1, '#FFA500');
+                    
+                    ctx.fillStyle = crownGrad;
+                    ctx.strokeStyle = '#DAA520';
+                    ctx.lineWidth = Math.floor(4 * scale);
+                    
+                    // Draw crown shape
+                    ctx.beginPath();
+                    const peaks = 5;
+                    for (let i = 0; i <= peaks; i++) {
+                        const x = crownX - crownWidth/2 + (i * crownWidth / peaks);
+                        const y = i % 2 === 0 ? crownY : crownY + crownHeight * 0.3;
+                        if (i === 0) ctx.moveTo(x, crownY + crownHeight);
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.lineTo(crownX + crownWidth/2, crownY + crownHeight);
+                    ctx.lineTo(crownX - crownWidth/2, crownY + crownHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Jewels
+                    ctx.fillStyle = '#FF0000';
+                    ctx.shadowBlur = 10 * scale;
+                    ctx.shadowColor = '#FF0000';
+                    for (let i = 0; i < peaks; i++) {
+                        if (i % 2 === 0) {
+                            const jewelX = crownX - crownWidth/2 + (i * crownWidth / peaks);
+                            ctx.beginPath();
+                            ctx.arc(jewelX, crownY + crownHeight * 0.15, 10 * scale, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    break;
+                    
+                case 'glitter':
+                    // Sparkle effect around face
+                    const numSparkles = 30;
+                    ctx.shadowBlur = 15 * scale;
+                    
+                    for (let i = 0; i < numSparkles; i++) {
+                        const angle = (i / numSparkles) * Math.PI * 2;
+                        const distance = scaledBox.width * 0.6 + (i % 3) * 20 * scale;
+                        const sparkleX = scaledBox.x + scaledBox.width / 2 + Math.cos(angle) * distance;
+                        const sparkleY = scaledBox.y + scaledBox.height / 2 + Math.sin(angle) * distance;
+                        const size = (8 + (i % 3) * 4) * scale;
+                        
+                        const colors = ['#FFD700', '#00ff00', '#FF1493', '#00FFFF'];
+                        ctx.fillStyle = colors[i % colors.length];
+                        ctx.shadowColor = ctx.fillStyle;
+                        
+                        // Star shape
+                        ctx.beginPath();
+                        for (let j = 0; j < 5; j++) {
+                            const starAngle = (j * 4 * Math.PI) / 5 - Math.PI / 2;
+                            const radius = j % 2 === 0 ? size : size * 0.4;
+                            const px = sparkleX + Math.cos(starAngle) * radius;
+                            const py = sparkleY + Math.sin(starAngle) * radius;
+                            if (j === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    break;
+                    
+                case 'mask':
+                    // Tech mask overlay
+                    const maskWidth = scaledBox.width * 0.85;
+                    const maskHeight = scaledBox.height * 0.4;
+                    const maskY = scaledLandmarks.nose.y - maskHeight * 0.2;
+                    const maskX = scaledBox.x + scaledBox.width / 2;
+                    
+                    // Mask gradient
+                    const maskGrad = ctx.createRadialGradient(maskX, maskY, 0, maskX, maskY, maskWidth/2);
+                    maskGrad.addColorStop(0, 'rgba(0, 255, 0, 0.4)');
+                    maskGrad.addColorStop(1, 'rgba(0, 200, 0, 0.7)');
+                    
+                    ctx.fillStyle = maskGrad;
+                    ctx.shadowBlur = 20 * scale;
+                    ctx.shadowColor = '#00ff00';
+                    
+                    // Draw mask shape
+                    ctx.beginPath();
+                    ctx.ellipse(maskX, maskY, maskWidth/2, maskHeight/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tech pattern
+                    ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+                    ctx.lineWidth = Math.floor(2 * scale);
+                    for (let i = 0; i < 5; i++) {
+                        ctx.beginPath();
+                        ctx.arc(maskX, maskY, (maskWidth/2) * (0.3 + i * 0.15), 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    break;
+            }
+            
+            ctx.restore();
+        }
+
+        // Capture Photo with HIGH QUALITY Branding Overlay - EXACT MATCH TO PREVIEW
         document.getElementById('captureBtn').addEventListener('click', async () => {
             const flash = document.getElementById('flashEffect');
             flash.classList.add('active');
             setTimeout(() => flash.classList.remove('active'), 500);
 
-            // Create a temporary canvas for capturing from video
+            // Create HIGH-RESOLUTION canvas for MAXIMUM quality
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = video.videoWidth;
             tempCanvas.height = video.videoHeight;
-            const tempCtx = tempCanvas.getContext('2d');
+            const tempCtx = tempCanvas.getContext('2d', { alpha: false });
             
-            // Draw the video frame
+            // Enable high-quality rendering
+            tempCtx.imageSmoothingEnabled = true;
+            tempCtx.imageSmoothingQuality = 'high';
+            
+            // Draw the video frame at FULL quality
             tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
             
-            // Add professional branding overlay
+            // Apply AR filters if active face detected (USE SAME FUNCTION AS PREVIEW!)
+            if (detectedFaces.length > 0 && currentARFilter !== 'none') {
+                // Use realtime filter function for consistency
+                drawARFilterRealtime(tempCtx, detectedFaces[0], tempCanvas.width, tempCanvas.height);
+            }
+            
+            // Calculate proportional sizes based on canvas dimensions
+            const scale = tempCanvas.width / 1080; // Base scale from design resolution
+            
+            // Add professional branding overlay - EXACT MATCH TO PREVIEW
             // Top Bar with Logos
-            const topBarHeight = 140;
+            const topBarHeight = Math.floor(140 * scale);
             const topGradient = tempCtx.createLinearGradient(0, 0, 0, topBarHeight);
-            topGradient.addColorStop(0, 'rgba(0,0,0,0.95)');
-            topGradient.addColorStop(1, 'rgba(0,0,0,0.75)');
+            topGradient.addColorStop(0, 'rgba(0,0,0,0.8)');
+            topGradient.addColorStop(1, 'rgba(0,0,0,0.5)');
             tempCtx.fillStyle = topGradient;
             tempCtx.fillRect(0, 0, tempCanvas.width, topBarHeight);
             
-            // Green accent line top
-            tempCtx.fillStyle = '#00ff00';
-            tempCtx.fillRect(0, topBarHeight - 6, tempCanvas.width, 6);
+            // Green accent line top - BRIGHT
+            tempCtx.fillStyle = 'rgba(0,255,0,0.7)';
+            tempCtx.fillRect(0, topBarHeight - Math.floor(2 * scale), tempCanvas.width, Math.floor(2 * scale));
             
             // Bottom Bar with Logos
-            const bottomBarHeight = 200;
+            const bottomBarHeight = Math.floor(200 * scale);
             const bottomY = tempCanvas.height - bottomBarHeight;
             const bottomGradient = tempCtx.createLinearGradient(0, bottomY, 0, tempCanvas.height);
-            bottomGradient.addColorStop(0, 'rgba(0,0,0,0.75)');
-            bottomGradient.addColorStop(1, 'rgba(0,0,0,0.95)');
+            bottomGradient.addColorStop(0, 'rgba(0,0,0,0.4)');
+            bottomGradient.addColorStop(1, 'rgba(0,0,0,0.75)');
             tempCtx.fillStyle = bottomGradient;
             tempCtx.fillRect(0, bottomY, tempCanvas.width, bottomBarHeight);
             
-            // Green accent line bottom
-            tempCtx.fillStyle = '#00ff00';
-            tempCtx.fillRect(0, bottomY, tempCanvas.width, 6);
+            // Green accent line bottom - BRIGHT
+            tempCtx.fillStyle = 'rgba(0,255,0,0.7)';
+            tempCtx.fillRect(0, bottomY, tempCanvas.width, Math.floor(2 * scale));
             
-            // Load and draw logos
+            // Load and draw logos at EXACT SAME SIZE as preview
             try {
-                // IEEE Logo (top left)
+                // IEEE Logo (top left) - LARGE SIZE
                 const ieeeImg = await loadImage('assets/logos/IEEE.png');
-                tempCtx.drawImage(ieeeImg, 40, 30, 180, 80);
+                const ieeeW = Math.floor(180 * scale);
+                const ieeeH = Math.floor(80 * scale);
+                tempCtx.drawImage(ieeeImg, Math.floor(40 * scale), Math.floor(30 * scale), ieeeW, ieeeH);
                 
-                // SLSAC Logo (top center)
+                // SLSAC Logo (top center) - LARGE SIZE
                 const slsacImg = await loadImage('assets/logos/slsac.png');
-                tempCtx.drawImage(slsacImg, (tempCanvas.width - 160) / 2, 35, 160, 70);
+                const slsacW = Math.floor(160 * scale);
+                const slsacH = Math.floor(70 * scale);
+                tempCtx.drawImage(slsacImg, (tempCanvas.width - slsacW) / 2, Math.floor(35 * scale), slsacW, slsacH);
                 
-                // TechVerse Logo (top right)
+                // TechVerse Logo (top right) - LARGE SIZE
                 const techverseImg = await loadImage('assets/logos/techverse.png');
-                tempCtx.drawImage(techverseImg, tempCanvas.width - 220, 30, 180, 80);
+                const techverseW = Math.floor(180 * scale);
+                const techverseH = Math.floor(80 * scale);
+                tempCtx.drawImage(techverseImg, tempCanvas.width - techverseW - Math.floor(40 * scale), Math.floor(30 * scale), techverseW, techverseH);
                 
-                // TechFest Logo (bottom left)
+                // TechFest Logo (bottom left) - LARGE & PROMINENT
                 const techfestImg = await loadImage('assets/logos/techfest.png');
-                tempCtx.drawImage(techfestImg, 80, bottomY + 40, 220, 85);
+                const techfestW = Math.floor(280 * scale); // BIGGER
+                const techfestH = Math.floor(110 * scale);
+                tempCtx.drawImage(techfestImg, Math.floor(60 * scale), bottomY + Math.floor(50 * scale), techfestW, techfestH);
                 
-                // Ceylon Labs Logo (bottom right)
+                // Ceylon Labs Logo (bottom right) - LARGE & PROMINENT (SAME AS PREVIEW!)
                 const ceylonImg = await loadImage('assets/logos/2.png');
-                tempCtx.drawImage(ceylonImg, tempCanvas.width - 300, bottomY + 40, 220, 85);
+                const ceylonW = Math.floor(280 * scale); // BIGGER - MATCH PREVIEW
+                const ceylonH = Math.floor(110 * scale);
+                tempCtx.drawImage(ceylonImg, tempCanvas.width - ceylonW - Math.floor(60 * scale), bottomY + Math.floor(50 * scale), ceylonW, ceylonH);
                 
             } catch (error) {
                 console.error('Logo loading error:', error);
             }
             
-            // Add timestamp watermark
-            tempCtx.fillStyle = 'rgba(0,255,0,0.6)';
-            tempCtx.font = 'bold 28px Inter, sans-serif';
-            tempCtx.textAlign = 'right';
-            tempCtx.fillText(new Date().toLocaleDateString(), tempCanvas.width - 40, bottomY - 20);
-            
-            // Convert to blob and AUTO-DOWNLOAD
+            // Convert to blob and AUTO-DOWNLOAD at MAXIMUM QUALITY (PNG for lossless!)
             tempCanvas.toBlob((blob) => {
                 // Create download link
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `TechFest-2025-${Date.now()}.jpg`;
+                a.download = `TechFest-AR-${Date.now()}.png`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                console.log('✅ Photo downloaded!');
+                console.log('✅ HIGH-QUALITY Photo downloaded (PNG LOSSLESS)!');
                 
                 // Show success message
                 showDownloadSuccess();
-            }, 'image/jpeg', 0.92);
+            }, 'image/png'); // PNG for LOSSLESS quality!
         });
         
         // Show download success notification
@@ -3013,6 +3713,10 @@
         // Init
         const stored = localStorage.getItem('techfest_photos');
         if (stored) capturedPhotos = JSON.parse(stored);
+
+        // Preload face detection models immediately
+        console.log('🚀 Starting face detection model preload...');
+        loadFaceDetection();
 
         if ('wakeLock' in navigator) {
             navigator.wakeLock.request('screen').catch(() => {});
