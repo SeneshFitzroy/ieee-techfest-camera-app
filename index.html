@@ -3372,11 +3372,12 @@
             }
             
             // Calculate proportional sizes based on canvas dimensions
-            const scale = tempCanvas.width / 1080; // Base scale from design resolution
+            // Use video width as reference since that's what the live view uses
+            const scale = tempCanvas.width / video.videoWidth;
             
             // Add professional branding overlay - EXACT MATCH TO LIVE PREVIEW
             // Top Bar with Logos (matching live view exactly)
-            const topBarHeight = Math.floor(100 * scale);
+            const topBarHeight = Math.floor(video.videoHeight * 0.08); // ~8% of height
             const topGradient = tempCtx.createLinearGradient(0, 0, 0, topBarHeight);
             topGradient.addColorStop(0, 'rgba(0,0,0,0.8)');
             topGradient.addColorStop(1, 'rgba(0,0,0,0.5)');
@@ -3385,10 +3386,10 @@
             
             // GREEN HORIZONTAL LINE - Top border (matching live view)
             tempCtx.fillStyle = 'rgba(0,255,0,0.7)';
-            tempCtx.fillRect(0, topBarHeight - Math.floor(2 * scale), tempCanvas.width, Math.floor(2 * scale));
+            tempCtx.fillRect(0, topBarHeight - 2, tempCanvas.width, 2);
             
             // Bottom Bar with Logos (matching live view exactly)
-            const bottomBarHeight = Math.floor(160 * scale);
+            const bottomBarHeight = Math.floor(video.videoHeight * 0.13); // ~13% of height
             const bottomY = tempCanvas.height - bottomBarHeight;
             const bottomGradient = tempCtx.createLinearGradient(0, bottomY, 0, tempCanvas.height);
             bottomGradient.addColorStop(0, 'rgba(0,0,0,0.4)');
@@ -3398,17 +3399,17 @@
             
             // GREEN HORIZONTAL LINE - Bottom border (matching live view)
             tempCtx.fillStyle = 'rgba(0,255,0,0.7)';
-            tempCtx.fillRect(0, bottomY, tempCanvas.width, Math.floor(2 * scale));
+            tempCtx.fillRect(0, bottomY, tempCanvas.width, 2);
             
             // Load and draw logos at EXACT SAME SIZE and QUALITY as live preview
             try {
-                // Calculate logo heights matching live view clamp(min, ideal, max)
-                // Top logos use: clamp(35px, 6vh, 65px) and clamp(30px, 5.5vh, 60px)
-                const topLogoHeight = Math.max(35 * scale, Math.min(65 * scale, tempCanvas.height * 0.06));
-                const slsacLogoHeight = Math.max(30 * scale, Math.min(60 * scale, tempCanvas.height * 0.055));
+                // Calculate logo heights matching live view percentages
+                // Top logos are ~6vh and 5.5vh (6% and 5.5% of viewport height)
+                const topLogoHeight = tempCanvas.height * 0.06;
+                const slsacLogoHeight = tempCanvas.height * 0.055;
                 
-                // Bottom logos use: clamp(80px, 16vh, 160px)
-                const bottomLogoHeight = Math.max(80 * scale, Math.min(160 * scale, tempCanvas.height * 0.16));
+                // Bottom logos are ~16vh (16% of viewport height)
+                const bottomLogoHeight = tempCanvas.height * 0.16;
                 
                 // IEEE Logo (top left) with green glow shadow
                 const ieeeImg = await loadImage('assets/logos/IEEE.png');
@@ -3417,7 +3418,7 @@
                 tempCtx.shadowColor = 'rgba(0,255,0,0.5)';
                 tempCtx.shadowBlur = 10;
                 tempCtx.shadowOffsetY = 2;
-                tempCtx.drawImage(ieeeImg, Math.floor(50 * scale), Math.floor(15 * scale), ieeeW, topLogoHeight);
+                tempCtx.drawImage(ieeeImg, tempCanvas.width * 0.05, topBarHeight * 0.25, ieeeW, topLogoHeight);
                 tempCtx.restore();
                 
                 // SLSAC Logo (top center) with green glow shadow
@@ -3427,7 +3428,7 @@
                 tempCtx.shadowColor = 'rgba(0,255,0,0.5)';
                 tempCtx.shadowBlur = 10;
                 tempCtx.shadowOffsetY = 2;
-                tempCtx.drawImage(slsacImg, (tempCanvas.width - slsacW) / 2, Math.floor(20 * scale), slsacW, slsacLogoHeight);
+                tempCtx.drawImage(slsacImg, (tempCanvas.width - slsacW) / 2, topBarHeight * 0.3, slsacW, slsacLogoHeight);
                 tempCtx.restore();
                 
                 // TechVerse Logo (top right) with green glow shadow
@@ -3437,19 +3438,19 @@
                 tempCtx.shadowColor = 'rgba(0,255,0,0.5)';
                 tempCtx.shadowBlur = 10;
                 tempCtx.shadowOffsetY = 2;
-                tempCtx.drawImage(techverseImg, tempCanvas.width - techverseW - Math.floor(50 * scale), Math.floor(15 * scale), techverseW, topLogoHeight);
+                tempCtx.drawImage(techverseImg, tempCanvas.width * 0.95 - techverseW, topBarHeight * 0.25, techverseW, topLogoHeight);
                 tempCtx.restore();
                 
                 // TechFest Logo (bottom center-left) with strong green glow
                 const techfestImg = await loadImage('assets/logos/techfest.png');
                 const techfestW = bottomLogoHeight * (techfestImg.width / techfestImg.height);
-                const gap = Math.max(20 * scale, Math.min(40 * scale, tempCanvas.width * 0.04));
+                const gap = tempCanvas.width * 0.04; // 4vw gap
                 const techfestX = (tempCanvas.width / 2) - techfestW - (gap / 2);
                 tempCtx.save();
                 tempCtx.shadowColor = 'rgba(0,255,0,0.8)';
                 tempCtx.shadowBlur = 20;
                 tempCtx.shadowOffsetY = 4;
-                tempCtx.drawImage(techfestImg, techfestX, bottomY + Math.floor(10 * scale), techfestW, bottomLogoHeight);
+                tempCtx.drawImage(techfestImg, techfestX, bottomY + (bottomBarHeight - bottomLogoHeight) / 2, techfestW, bottomLogoHeight);
                 tempCtx.restore();
                 
                 // Ceylon Labs Logo (bottom center-right) with green glow
@@ -3460,7 +3461,7 @@
                 tempCtx.shadowColor = 'rgba(0,255,0,0.6)';
                 tempCtx.shadowBlur = 15;
                 tempCtx.shadowOffsetY = 2;
-                tempCtx.drawImage(ceylonImg, ceylonX, bottomY + Math.floor(10 * scale), ceylonW, bottomLogoHeight);
+                tempCtx.drawImage(ceylonImg, ceylonX, bottomY + (bottomBarHeight - bottomLogoHeight) / 2, ceylonW, bottomLogoHeight);
                 tempCtx.restore();
                 
             } catch (error) {
